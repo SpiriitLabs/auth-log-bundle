@@ -1,0 +1,63 @@
+{
+    "name": "spiriitlabs/auth-log-bundle",
+    "description": "A Symfony bundle to log authentication events",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "prefer-stable": true,
+    "authors": [
+        {
+            "name": "Spiriit",
+            "email": "dev@spiriit.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Spiriit\\Bundle\\AuthLogBundle\\": "src/"
+        },
+        "exclude-from-classmap": [
+            "/tests/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Spiriit\\Bundle\\Tests\\": "Tests/"
+        }
+    },
+    "require": {
+        "php": ">=8.3",
+        "doctrine/orm": "3.* || ^4.0",
+        "symfony/config": "^6.4|^7.0",
+        "symfony/dependency-injection": "^6.4|^7.0",
+        "symfony/event-dispatcher": "^6.4|^7.0",
+        "symfony/messenger": "^6.4|^7.0",
+        "symfony/framework-bundle": "^6.0 || ^7.0",
+        "symfony/http-client": "^6.0 || ^7.0",
+        "symfony/mailer": "^6.0 || ^7.0",
+        "symfony/security-bundle": "^6.4|^7.0",
+        "symfony/translation-contracts": "^1.0|^2.0|^3.0",
+        "symfony/twig-bundle": "^6.4|^7.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-symfony": "^2.0",
+        "rector/rector": "^2.1",
+        "symfony/phpunit-bridge": "^7.3"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "suggest": {
+        "geoip2/geoip2": "Required if you want to enrich logs with geolocation"
+    },
+    "scripts": {
+        "check": [
+            "@cs-check"
+        ],
+        "cs-check": "vendor/bin/php-cs-fixer fix --verbose --diff --dry-run",
+        "cs-fix": "vendor/bin/php-cs-fixer fix --verbose --diff",
+        "test": [
+            "vendor/bin/simple-phpunit"
+        ]
+    }
+}

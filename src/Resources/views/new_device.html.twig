@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dernière connexion à votre compte</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f6f6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        p {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+        .info {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .info strong {
+            display: inline-block;
+            width: 120px;
+        }
+        .footer {
+            font-size: 12px;
+            color: #888;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Dernière connexion à votre compte</h1>
+
+    <p>Bonjour,</p>
+    <p>Nous vous informons qu'une connexion à votre compte a été détectée :</p>
+
+    <div class="info">
+        <p><strong>Adresse IP :</strong> {{ userInformation.ipAddress ?? '-' }}</p>
+        <p><strong>Appareil :</strong> {{ userInformation.userAgent ?? '-' }}</p>
+        <p><strong>Date :</strong> {{ userInformation.loginAt ? userInformation.loginAt|format_date('short') : '-' }}</p>
+        <p><strong>Localisation :</strong>
+            {% if userInformation.location is not empty %}
+                {{ userInformation.location.city ?? '-' }}, {{ userInformation.location.country ?? '-' }}
+                {% if userInformation.location.latitude and userInformation.location.longitude %}
+                    (<a href="https://www.google.com/maps?q={{ userInformation.location.latitude }},{{ userInformation.location.longitude }}" target="_blank">
+                    map
+                </a>)
+                {% endif %}
+            {% else %}
+                -
+            {% endif %}
+        </p>
+    </div>
+
+    <p>Si vous n’êtes pas à l’origine de cette connexion, nous vous conseillons de changer votre mot de passe immédiatement.</p>
+
+    <div class="footer">
+        <p>Ceci est un message automatique, merci de ne pas répondre directement à cet e-mail.</p>
+    </div>
+</div>
+</body>
+</html>

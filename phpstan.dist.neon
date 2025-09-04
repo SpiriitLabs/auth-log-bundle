@@ -1,0 +1,7 @@
+parameters:
+	level: 6
+	paths:
+		- src
+		- tests
+	excludePaths:
+		- src/DependencyInjection/Configuration.php

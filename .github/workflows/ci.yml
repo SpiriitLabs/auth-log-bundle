@@ -1,0 +1,55 @@
+name: "CI Tests"
+
+on:
+  pull_request:
+  push:
+
+env:
+  fail-fast: true
+  PHPUNIT_FLAGS: "-v"
+  SYMFONY_DEPRECATIONS_HELPER: weak
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: PHP v${{ matrix.php }}, Symfony v${{ matrix.symfony }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { php: 8.3, symfony: "6.4.*", composer-flags: '--prefer-dist' } # LTS with last stable PHP
+          - { php: 8.3, symfony: "7.1.*", composer-flags: '--prefer-dist' } # Stable Symfony branches
+          - { php: 8.4, symfony: "7.2.*", composer-flags: '--prefer-dist' } # Stable Symfony branches
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+        with:
+          fetch-depth: 2
+
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl,mbstring,xdebug
+          ini-values: date.timezone="Europe/Paris"
+          coverage: xdebug
+          tools: "composer:v2,flex"
+
+      - name: "Show PHP version"
+        run: php -v && composer -V
+
+      - name: "Cache Composer packages"
+        uses: "actions/cache@v4"
+        with:
+          path: "~/.composer/cache"
+          key: "php-${{ matrix.php }}-symfony-${{ matrix.symfony }}-composer-${{ hashFiles('composer.json') }}-flags-${{ matrix.composer-flags }}"
+          restore-keys: "php-"
+
+      - name: "Install dependencies"
+        run: "composer update ${{ matrix.composer-flags }} --prefer-dist"
+        env:
+          SYMFONY_REQUIRE: "${{ matrix.symfony }}"
+
+      - name: "Run PHPUnit Tests"
+        run: "composer test"
