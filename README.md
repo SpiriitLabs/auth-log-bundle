@@ -201,7 +201,7 @@ class UserAuthenticationLogFactory implements AuthenticationLogFactoryInterface
             throw new \InvalidArgumentException();
         }
 
-        return new AssureAuthLog(
+        return new UserAuthenticationLog(
             user: $user,
             userInformation: $userInformation,
         );
