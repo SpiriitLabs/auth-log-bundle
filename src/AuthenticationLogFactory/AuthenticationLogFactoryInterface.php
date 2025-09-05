@@ -18,9 +18,6 @@ interface AuthenticationLogFactoryInterface
 {
     public function supports(): string;
 
-    /**
-     * @param mixed[] $factoryParameters
-     */
     public function createFrom(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog;
 
     public function isKnown(AbstractAuthenticationLog $authenticationLog): bool;

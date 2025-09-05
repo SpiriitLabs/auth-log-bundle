@@ -39,7 +39,6 @@ class LoginListener
         $request = $event->getRequest();
 
         /** @var UserInterface&AuthenticableLogInterface $user */
-
         $loginParameterDto = new LoginParameterDto(
             factoryName: $user->getAuthenticationLogFactoryName(),
             userIdentifier: $user->getUserIdentifier(),

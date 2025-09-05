@@ -21,9 +21,6 @@ class AuthenticationContextBuilder
     ) {
     }
 
-    /**
-     * @param mixed[] $parametersFactory
-     */
     public function build(LoginParameterDto $loginParameterDto): AuthenticationContext
     {
         $factory = $this->factory->createFrom($loginParameterDto->factoryName);

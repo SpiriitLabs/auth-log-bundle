@@ -1,0 +1,10 @@
+framework:
+    test: true
+    secret: secret
+    translator:
+        default_path: 'translations'
+
+spiriit_auth_log:
+    transports:
+        sender_email: 'no-reply@yourdomain.com'
+        sender_name: 'Your App Security'

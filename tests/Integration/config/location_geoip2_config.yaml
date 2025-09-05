@@ -1,0 +1,14 @@
+framework:
+    test: true
+    secret: secret
+    translator:
+        default_path: 'translations'
+
+spiriit_auth_log:
+    transports:
+        sender_email: 'no-reply@yourdomain.com'
+        sender_name: 'Your App Security'
+
+    location:
+        provider: 'geoip2'
+        geoip2_database_path: '%kernel.project_dir%/../fixtures/geoip.mmdb'

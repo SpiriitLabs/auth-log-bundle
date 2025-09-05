@@ -59,7 +59,7 @@ spiriit_auth_log:
 
     # Geolocation configuration (optional)
     location:
-        method: null # 'geoip2', 'ipApi', or null to disable
+        provider: null # 'geoip2', 'ipApi', or null to disable
         geoip2_database_path: null # Required if using geoip2
 ```
 
@@ -72,7 +72,7 @@ spiriit_auth_log:
     # ...
 
     location:
-        method: 'geoip2'
+        provider: 'geoip2'
         geoip2_database_path: '%kernel.project_dir%/var/GeoLite2-City.mmdb'
 ```
 
@@ -85,7 +85,7 @@ spiriit_auth_log:
     # ...
 
     location:
-        method: 'ipApi'
+        provider: 'ipApi'
 ```
 
 ## Usage
