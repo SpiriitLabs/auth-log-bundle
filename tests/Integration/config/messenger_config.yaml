@@ -1,0 +1,11 @@
+framework:
+    test: true
+    secret: secret
+    translator:
+        default_path: 'translations'
+
+spiriit_auth_log:
+    messenger: 'messenger.default_bus'
+    transports:
+        sender_email: 'no-reply@yourdomain.com'
+        sender_name: 'Your App Security'

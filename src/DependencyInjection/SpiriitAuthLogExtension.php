@@ -47,20 +47,20 @@ final class SpiriitAuthLogExtension extends Extension
                 'fromName' => $config['transports']['sender_name'],
             ];
 
+            $container->setAlias('spiriit_auth_log.translator', 'translator');
+
             $container->setDefinition('spiriit_auth_log.notification', new Definition(NotificationInterface::class))
                 ->setClass(MailerNotification::class)
                 ->setArgument('$mailer', new Reference('spiriit_auth_log.transports.mailer'))
-                ->setArgument('$translator', new Reference('translator'))
-                ->setArgument('$addresses', $addresses)
-                ->setPublic(false);
+                ->setArgument('$translator', new Reference('spiriit_auth_log.translator'))
+                ->setArgument('$addresses', $addresses);
         } else {
             $container->setAlias('spiriit_auth_log.notification', $config['transports']['mailer'])->setPublic(false);
         }
 
-        $container->setDefinition('spiriit_auth_log.fetch_user_information', new Definition(FetchUserInformation::class))
-            ->setPublic(false);
+        $container->setDefinition('spiriit_auth_log.fetch_user_information', new Definition(FetchUserInformation::class));
 
-        if (null !== $config['location']) {
+        if (!empty($config['location'])) {
             $this->loadLocateMethod($config, $container);
         }
 
@@ -74,9 +74,9 @@ final class SpiriitAuthLogExtension extends Extension
 
         $container->setAlias('spiriit_auth_log.login_event_dispatcher', EventDispatcherInterface::class);
 
-        $definitionLoginListener = $container->getDefinition('spiriit_auth_log.login_listener');
-
         if ($config['messenger']) {
+            $definitionLoginListener = $container->getDefinition('spiriit_auth_log.login_listener');
+
             $loader->load('messenger.php');
 
             $definitionLoginListener->addMethodCall('setMessageBus', [
@@ -90,7 +90,7 @@ final class SpiriitAuthLogExtension extends Extension
      */
     private function loadLocateMethod(array $configLocation, ContainerBuilder $container): void
     {
-        $class = match ($configLocation['location']['method']) {
+        $class = match ($configLocation['location']['provider']) {
             'ipApi' => IpApiLocateMethod::class,
             'geoip2' => Geoip2LocateMethod::class,
             default => null,
@@ -100,13 +100,11 @@ final class SpiriitAuthLogExtension extends Extension
             $container->setDefinition('spiriit_auth_log.fetch_user_information_method', new Definition(FetchUserInformationMethodInterface::class))
                 ->setClass(IpApiLocateMethod::class)
                 ->setArgument('$httpClient', new Reference('spiriit_auth_log.http_client'))
-                ->setPublic(true)
             ;
         } elseif (Geoip2LocateMethod::class === $class) {
             $container->setDefinition('spiriit_auth_log.fetch_user_information_method', new Definition(FetchUserInformationMethodInterface::class))
                 ->setClass(Geoip2LocateMethod::class)
                 ->setArgument('$geoip2DatabasePath', $configLocation['location']['geoip2_database_path'] ?? null)
-                ->setPublic(true)
             ;
         }
     }

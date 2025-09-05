@@ -31,6 +31,7 @@ final class Configuration implements ConfigurationInterface
                     ->info('Enables integration with symfony/messenger if set true.')
                 ->end()
                 ->arrayNode('transports')
+                    ->isRequired()
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('mailer')
@@ -50,7 +51,7 @@ final class Configuration implements ConfigurationInterface
                 ->arrayNode('location')
                     ->canBeUnset()
                     ->children()
-                        ->scalarNode('method')
+                        ->scalarNode('provider')
                             ->defaultNull()
                             ->validate()
                                 ->ifNotInArray(['geoip2', 'ipApi', null])
@@ -63,7 +64,7 @@ final class Configuration implements ConfigurationInterface
                     ->end()
                     ->validate()
                         ->ifTrue(function ($v): bool {
-                            return null !== $v && ($v['method'] ?? null) === 'geoip2' && empty($v['geoip2_database_path']);
+                            return null !== $v && ($v['provider'] ?? null) === 'geoip2' && empty($v['geoip2_database_path']);
                         })
                         ->thenInvalid('Le champ "geoip2_database_path" est requis si la méthode "geoip2" est utilisée.')
                     ->end()
