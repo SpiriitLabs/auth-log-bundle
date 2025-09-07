@@ -48,19 +48,11 @@ Create a configuration file `config/packages/spiriit_auth_log.yaml`:
 
 ```yaml
 spiriit_auth_log:
-    # Enable Messenger integration for async processing
-    messenger: 'messenger.default_bus' # no required
-
     # Email notification settings
     transports:
         mailer: 'mailer'
         sender_email: 'no-reply@yourdomain.com'
         sender_name: 'Your App Security'
-
-    # Geolocation configuration (optional)
-    location:
-        provider: null # 'geoip2', 'ipApi', or null to disable
-        geoip2_database_path: null # Required if using geoip2
 ```
 
 ### Configuration with GeoIP2
