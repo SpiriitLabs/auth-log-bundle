@@ -79,6 +79,8 @@ spiriit_auth_log:
         provider: 'ipApi'
 ```
 
+![ipApi.png](doc/images/ipApi.png)
+
 ## Usage
 
 ## 1. Implement AuthenticableLogInterface
