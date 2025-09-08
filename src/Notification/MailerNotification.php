@@ -11,8 +11,7 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Notification;
 
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
-use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticableLogInterface;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -31,16 +30,12 @@ final class MailerNotification implements NotificationInterface
     ) {
     }
 
-    public function send(UserInformation $userInformation, AbstractAuthenticationLog $authenticableLog): void
+    public function send(UserInformation $userInformation, UserReference $userReference): void
     {
-        if (!is_a($user = $authenticableLog->getUser(), AuthenticableLogInterface::class)) {
-            throw new \InvalidArgumentException('The $authenticableLog must implement AuthenticableLogInterface');
-        }
-
         $templateEmail = (new TemplatedEmail())
             ->to(new Address(
-                address: $user->getAuthenticationLogsToEmail(),
-                name: $user->getAuthenticationLogsToEmailName())
+                address: $userReference->getEmail(),
+                name: $userReference->getDisplayName())
             )
             ->from(new Address(address: $this->addresses['fromEmail'], name: $this->addresses['fromName']))
             ->subject(subject: $this->translator->trans('notification.subject', [], 'SpiriitAuthLogBundle'))
@@ -48,7 +43,7 @@ final class MailerNotification implements NotificationInterface
             ->context(
                 [
                     'userInformation' => $userInformation,
-                    'authenticableLog' => $user,
+                    'authenticableLog' => $userReference,
                 ],
             );
 

@@ -13,6 +13,5 @@ namespace Spiriit\Bundle\AuthLogBundle\Listener;
 
 class AuthenticationLogEvents
 {
-    public const LOGIN = 'spiriit.auth_log.login';
-    public const FAILED_LOGIN = 'spiriit.auth_log.failed_login';
+    public const NEW_DEVICE = 'spiriit.auth_log.new_device';
 }

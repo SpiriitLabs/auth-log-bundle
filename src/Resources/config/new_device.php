@@ -17,7 +17,7 @@ use Spiriit\Bundle\AuthLogBundle\Services\AuthenticationContextBuilder;
 use Spiriit\Bundle\AuthLogBundle\Services\AuthenticationEventPublisher;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
 use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 return static function (ContainerConfigurator $container): void {
@@ -52,7 +52,7 @@ return static function (ContainerConfigurator $container): void {
             service('spiriit_auth_log.login_service'),
         ])
         ->tag('kernel.event_listener', [
-            'event' => InteractiveLoginEvent::class,
+            'event' => LoginSuccessEvent::class,
             'method' => 'onLogin',
         ]);
 

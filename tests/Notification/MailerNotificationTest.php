@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Spiriit\Bundle\Tests\Notification;
 
 use PHPUnit\Framework\TestCase;
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticableLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\LocateUserInformation\LocateValues;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
@@ -53,17 +53,23 @@ final class MailerNotificationTest extends TestCase
             }
         };
 
-        $authenticableLog = $this->createMock(AbstractAuthenticationLog::class);
-        $authenticableLog->method('getUser')->willReturn($user);
+        $userReference = new UserReference(
+            type: 'user',
+            id: '1',
+        );
+        $userReference->setNotificationParameters(
+            toEmail: 'email@test.com',
+            toEmailName: 'Jon Smith'
+        );
 
         $notification->send(
-            userInformation: $userInformation = new UserInformation(
+            userInformation: new UserInformation(
                 ipAddress: '127.23.6',
                 userAgent: 'Mozilla',
                 loginAt: new \DateTimeImmutable('2025-09-11'),
                 location: new LocateValues(country: 'France', country_code: 'FR', city: 'Paris', latitude: 48.8566, longitude: 2.3522),
             ),
-            authenticableLog: $authenticableLog,
+            userReference: $userReference,
         );
     }
 }

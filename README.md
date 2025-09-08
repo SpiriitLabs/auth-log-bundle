@@ -50,7 +50,6 @@ Create a configuration file `config/packages/spiriit_auth_log.yaml`:
 spiriit_auth_log:
     # Email notification settings
     transports:
-        mailer: 'mailer'
         sender_email: 'no-reply@yourdomain.com'
         sender_name: 'Your App Security'
 ```
@@ -82,7 +81,46 @@ spiriit_auth_log:
 
 ## Usage
 
-### 1. Create Your Authentication Log Entity
+## 1. Implement AuthenticableLogInterface
+
+Equip your User with `AuthenticableLogInterface`:
+
+You could use any entity, here we use a User class as an example.
+
+But it's not an obligation, you have just to implement the interface.
+
+```php
+<?php
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticableLogInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+
+#[ORM\Entity]
+class User implements UserInterface, AuthenticableLogInterface
+{
+    // ... your existing User properties and methods
+
+    public function getAuthenticationLogFactoryName(): string
+    {
+        return 'customer'; // This should match your factory service name
+    }
+
+    public function getAuthenticationLogsToEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function getAuthenticationLogsToEmailName(): string
+    {
+        return $this->getFullName();
+    }
+}
+```
+
+### 2. Create Your Authentication Log Entity
 
 Create an entity that extends `AbstractAuthenticationLog`:
 
@@ -133,41 +171,6 @@ class UserAuthenticationLog extends AbstractAuthenticationLog
 }
 ```
 
-### 2. Implement AuthenticableLogInterface
-
-Equip your User with `AuthenticableLogInterface`:
-
-```php
-<?php
-
-namespace App\Entity;
-
-use Doctrine\ORM\Mapping as ORM;
-use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticableLogInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
-
-#[ORM\Entity]
-class User implements UserInterface, AuthenticableLogInterface
-{
-    // ... your existing User properties and methods
-
-    public function getAuthenticationLogFactoryName(): string
-    {
-        return 'user'; // This should match your factory service name
-    }
-
-    public function getAuthenticationLogsToEmail(): string
-    {
-        return $this->email;
-    }
-
-    public function getAuthenticationLogsToEmailName(): string
-    {
-        return $this->getFullName();
-    }
-}
-```
-
 ### 3. Create an Authentication Log Factory
 
 Spin up your Authentication Log Factory:
@@ -187,48 +190,48 @@ class UserAuthenticationLogFactory implements AuthenticationLogFactoryInterface
 {
     public function createFrom(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog
     {
-        $user = $this->entityManager->getRepository(User::class)->findOneBy(['identifiant' => $userIdentifier]);
+        $realCustomer = $this->entityManager->getRepository(User::class)->findOneBy(['identifiant' => $userIdentifier]);
 
-        if (!$user instanceof User) {
+        if (!$realCustomer instanceof User) {
             throw new \InvalidArgumentException();
         }
 
-        return new UserAuthenticationLog(
-            user: $user,
-            userInformation: $userInformation,
+        return new UserReference(
+            type: 'customer',
+            id: (string) $realCustomer->getCustomerId(),
         );
     }
 
-    public function isKnown(AbstractAuthenticationLog $authenticationLog): bool
+    public function isKnown(UserReference $userReference, UserInformation $userInformation): bool
     {
-        // example of basic logic
+        // Your logic to determine if the authentication log is known
+        // here is an example with Doctrine QueryBuilder
+        // you can also use a different storage system like Redis, ElasticSearch, etc.
 
         return (bool) $this->entityManager->createQueryBuilder()
             ->select('al')
             ->from(UserAuthenticationLog::class, 'uu')
             ->innerJoin('uu.user', 'u')
-            ->andWhere('u.createdAt < :one_minute')
             ->andWhere('uu.ipAddress = :ip')
             ->andWhere('uu.userAgent = :ua')
             ->andWhere('uu.id = :user_id')
-            ->setParameter('user_id', $authenticationLog->getUser()->getId())
-            ->setParameter('one_minute', new \DateTimeImmutable('-1 minute'))
-            ->setParameter('ip', $authenticationLog->getIpAddress())
-            ->setParameter('ua', $authenticationLog->getUserAgent())
+            ->setParameter('user_id', $userReference->id)
+            ->setParameter('ip', $userInformation->ipAddress)
+            ->setParameter('ua', $userInformation->userAgent)
             ->getQuery()
             ->getOneOrNullResult() ?? false;
     }
 
     public function supports(AuthenticableLogInterface $authenticableLog): string
     {
-        return 'user';
+        return 'customer'; // This should match the value returned by getAuthenticationLogFactoryName()
     }
 }
 ```
 
 ## Messenger Integration
 
-To enable asynchronous processing with Symfony Messenger:
+To enable a/synchronous processing with Symfony Messenger:
 
 1. Configure the bundle:
 
@@ -252,7 +255,7 @@ framework:
 
 The bundle send email notifications for authentication events.
 
-Currently only InteractiveEvent is supported.
+Currently only `LoginSuccessEvent` is supported.
 
 Ensure you have configured Symfony Mailer and enabled notifications:
 
@@ -289,21 +292,21 @@ class CustomAuthenticationLogListener implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            AuthenticationLogEvents::LOGIN => 'onLogin',
+            AuthenticationLogEvents::NEW_DEVICE => 'onLogin',
         ];
     }
 
     public function onLogin(AuthenticationLogEvent $event): void
     {
         // Add your custom logic here
-        $log = $event->getLog();
+        $log = $event->getUserReference();
         $userInfo = $event->getUserInformation();
 
         // persist log
         // flush
 
         // !! IMPORTANT !! Make sure to mark the event as persisted to continue the process
-        $event->markAsPersisted();
+        $event->markAsHandled();
     }
 }
 ```

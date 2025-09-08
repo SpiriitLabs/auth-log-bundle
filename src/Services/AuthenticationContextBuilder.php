@@ -30,8 +30,9 @@ class AuthenticationContextBuilder
             userAgent: $loginParameterDto->userAgent
         );
 
-        $authLog = $factory->createFrom($loginParameterDto->userIdentifier, $userInformation);
+        $userReference = $factory->createUserReference($loginParameterDto->userIdentifier);
+        $userReference->setNotificationParameters($loginParameterDto->toEmail, $loginParameterDto->toEmailName);
 
-        return new AuthenticationContext($factory, $authLog, $userInformation);
+        return new AuthenticationContext($factory, $userReference, $userInformation);
     }
 }
