@@ -17,7 +17,7 @@ use Spiriit\Bundle\AuthLogBundle\Messenger\AuthLoginMessage\AuthLoginMessage;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 
 class LoginListener
 {
@@ -28,9 +28,9 @@ class LoginListener
     ) {
     }
 
-    public function onLogin(InteractiveLoginEvent $event): void
+    public function onLogin(LoginSuccessEvent $event): void
     {
-        $user = $event->getAuthenticationToken()->getUser();
+        $user = $event->getUser();
 
         if (!$user instanceof AuthenticableLogInterface) {
             return;

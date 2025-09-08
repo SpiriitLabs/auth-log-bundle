@@ -11,10 +11,10 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Notification;
 
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
 interface NotificationInterface
 {
-    public function send(UserInformation $userInformation, AbstractAuthenticationLog $authenticableLog): void;
+    public function send(UserInformation $userInformation, UserReference $userReference): void;
 }

@@ -11,14 +11,14 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\AuthenticationLogFactory;
 
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
 interface AuthenticationLogFactoryInterface
 {
     public function supports(): string;
 
-    public function createFrom(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog;
+    public function createUserReference(string $userIdentifier): UserReference;
 
-    public function isKnown(AbstractAuthenticationLog $authenticationLog): bool;
+    public function isKnown(UserReference $userReference, UserInformation $userInformation): bool;
 }

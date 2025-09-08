@@ -19,6 +19,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class IpApiLocateMethod implements FetchUserInformationMethodInterface
 {
+    public const SUCCESS = 'success';
+
     public function __construct(private readonly HttpClientInterface $httpClient)
     {
     }
@@ -32,6 +34,10 @@ class IpApiLocateMethod implements FetchUserInformationMethodInterface
         }
 
         $data = $response->toArray();
+
+        if (self::SUCCESS !== $data['status']) {
+            return null;
+        }
 
         return new LocateValues(
             country: $data['country'],

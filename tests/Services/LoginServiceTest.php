@@ -12,7 +12,7 @@ namespace Spiriit\Bundle\Tests\Services;
 use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLogFactory\AuthenticationLogFactoryInterface;
 use Spiriit\Bundle\AuthLogBundle\DTO\LoginParameterDto;
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Services\AuthenticationContext;
 use Spiriit\Bundle\AuthLogBundle\Services\AuthenticationContextBuilder;
@@ -33,19 +33,23 @@ class LoginServiceTest extends TestCase
         );
 
         $authLogFactory = $this->createMock(AuthenticationLogFactoryInterface::class);
-        $authLog = $this->createMock(AbstractAuthenticationLog::class);
+
+        $userReference = new UserReference(
+            type: 'user',
+            id: '1',
+        );
 
         $userInformation = new UserInformation('127.0.0.1', 'PHPUnit', new \DateTimeImmutable('2025-09-01'), null);
 
         $authLogFactory
             ->expects(self::once())
             ->method('isKnown')
-            ->with($authLog)
+            ->with($userReference)
             ->willReturn(false);
 
         $context = new AuthenticationContext(
-            authLog: $authLogFactory,
-            authenticationLog: $authLog,
+            authenticationLogFactory: $authLogFactory,
+            userReference: $userReference,
             userInformation: $userInformation
         );
 
@@ -77,19 +81,22 @@ class LoginServiceTest extends TestCase
         );
 
         $authLogFactory = $this->createMock(AuthenticationLogFactoryInterface::class);
-        $authLog = $this->createMock(AbstractAuthenticationLog::class);
+        $userReference = new UserReference(
+            type: 'user',
+            id: '1',
+        );
 
         $userInformation = new UserInformation('127.0.0.1', 'PHPUnit', new \DateTimeImmutable('2025-09-01'), null);
 
         $authLogFactory
             ->expects(self::once())
             ->method('isKnown')
-            ->with($authLog)
+            ->with($userReference)
             ->willReturn(true);
 
         $context = new AuthenticationContext(
-            authLog: $authLogFactory,
-            authenticationLog: $authLog,
+            authenticationLogFactory: $authLogFactory,
+            userReference: $userReference,
             userInformation: $userInformation
         );
 

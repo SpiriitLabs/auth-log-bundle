@@ -24,16 +24,16 @@ class AuthenticationEventPublisher
 
     public function publish(AuthenticationContext $context): void
     {
-        $event = new AuthenticationLogEvent($context->authenticationLog, $context->userInformation);
-        $this->dispatcher->dispatch($event, AuthenticationLogEvents::LOGIN);
+        $event = new AuthenticationLogEvent($context->userReference, $context->userInformation);
+        $this->dispatcher->dispatch($event, AuthenticationLogEvents::NEW_DEVICE);
 
-        if (!$event->isRegisterConfirmed()) {
-            throw new \RuntimeException('The authentication log should be confirm persisted by an event listener');
+        if (!$event->isLogHandled()) {
+            throw new \Exception('The event must be marked as handled by a listener.');
         }
 
         $this->notifier->send(
             userInformation: $context->userInformation,
-            authenticableLog: $context->authenticationLog
+            userReference: $context->userReference
         );
     }
 }

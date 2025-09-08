@@ -23,7 +23,7 @@ class LoginService
     {
         $context = $this->contextBuilder->build($loginParameterDto);
 
-        if (!$context->authLog->isKnown($context->authenticationLog)) {
+        if (!$context->isKnown()) {
             $this->publisher->publish($context);
         }
     }
