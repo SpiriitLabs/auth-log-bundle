@@ -79,8 +79,6 @@ spiriit_auth_log:
         provider: 'ipApi'
 ```
 
-![ipApi.png](doc/images/ipApi.png)
-
 ## Usage
 
 ## 1. Implement AuthenticableLogInterface
@@ -316,6 +314,8 @@ class CustomAuthenticationLogListener implements EventSubscriberInterface
 ## Template
 
 You can use the default template, not recommended indeed!
+
+![ipApi.png](doc/images/ipApi.png)
 
 Override here
 
