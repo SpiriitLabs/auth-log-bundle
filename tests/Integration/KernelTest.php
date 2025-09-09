@@ -23,8 +23,6 @@ class KernelTest extends KernelTestCase
 {
     protected function setUp(): void
     {
-        parent::setUp();
-
         $fs = new Filesystem();
         $fs->remove(sys_get_temp_dir().'/SpiriitAuthLogBundle/');
     }

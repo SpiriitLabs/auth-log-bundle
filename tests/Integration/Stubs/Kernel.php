@@ -19,10 +19,7 @@ class Kernel extends BaseKernel
     /* @phpstan-ignore-next-line */
     public const IS_LEGACY = 5 > BaseKernel::MAJOR_VERSION;
 
-    /**
-     * @var string
-     */
-    private $config;
+    private string $config;
 
     public function __construct(string $environment, bool $debug, string $config = 'base')
     {

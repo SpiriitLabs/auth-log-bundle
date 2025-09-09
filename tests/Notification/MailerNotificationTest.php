@@ -36,7 +36,7 @@ final class MailerNotificationTest extends TestCase
             ],
         );
 
-        $user = new class implements AuthenticableLogInterface {
+        new class implements AuthenticableLogInterface {
             public function getAuthenticationLogFactoryName(): string
             {
                 return 'user';
