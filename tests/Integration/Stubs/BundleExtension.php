@@ -18,6 +18,6 @@ class BundleExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $phpLoader = new PhpFileLoader($container, new FileLocator(__DIR__.'/../config'));
+        new PhpFileLoader($container, new FileLocator(__DIR__.'/../config'));
     }
 }

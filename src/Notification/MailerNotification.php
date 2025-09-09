@@ -18,15 +18,15 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final class MailerNotification implements NotificationInterface
+final readonly class MailerNotification implements NotificationInterface
 {
     /**
      * @param mixed[] $addresses
      */
     public function __construct(
-        private readonly MailerInterface $mailer,
-        private readonly TranslatorInterface $translator,
-        private readonly array $addresses,
+        private MailerInterface $mailer,
+        private TranslatorInterface $translator,
+        private array $addresses,
     ) {
     }
 

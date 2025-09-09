@@ -62,7 +62,7 @@ class SpiriitAuthLogExtensionTest extends TestCase
             ],
         ]));
 
-        $container->set('kernel', function () {
+        $container->set('kernel', function (): Kernel {
             return new Kernel('test', false);
         });
 

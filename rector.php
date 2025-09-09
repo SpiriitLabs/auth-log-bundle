@@ -24,8 +24,8 @@ return RectorConfig::configure()
     ->withPaths([
         __DIR__
     ])
-    ->withPhpVersion(PhpVersion::PHP_83)
-    ->withSets([SetList::PHP_83])
+    ->withPhpVersion(PhpVersion::PHP_82)
+    ->withSets([SetList::PHP_82])
     ->withImportNames()
     ->withPreparedSets(
         deadCode: true,
