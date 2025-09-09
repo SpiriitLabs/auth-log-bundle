@@ -3,7 +3,7 @@
 A comprehensive Symfony bundle for logging authentication events including successful logins. This bundle provides detailed logging with IP address tracking, user agent information, geolocation data, and email notifications.
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![PHP Version](https://img.shields.io/badge/php-8.3%2B-blue.svg)](https://php.net)
+[![PHP Version](https://img.shields.io/badge/php-8.2%2B-blue.svg)](https://php.net)
 [![Symfony](https://img.shields.io/badge/symfony-6.4%2B%7C7.0%2B-blue.svg)](https://symfony.com)
 [![Latest Stable Version](https://poser.pugx.org/spiriitlabs/auth-log-bundle/v/stable.svg)](https://packagist.org/packages/spiriitlabs/auth-log-bundle)
 [![CI Tests](https://github.com/SpiriitLabs/auth-log-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/SpiriitLabs/auth-log-bundle/actions/workflows/ci.yml)
