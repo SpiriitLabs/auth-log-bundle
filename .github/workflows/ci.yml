@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { php: 8.3, symfony: "6.4.*", composer-flags: '--prefer-dist' } # LTS with last stable PHP
+          - { php: 8.2, symfony: "6.4.*", composer-flags: '--prefer-dist' } # LTS with last stable PHP
           - { php: 8.3, symfony: "7.1.*", composer-flags: '--prefer-dist' } # Stable Symfony branches
           - { php: 8.4, symfony: "7.2.*", composer-flags: '--prefer-dist' } # Stable Symfony branches
 
