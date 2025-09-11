@@ -1,12 +1,31 @@
 # SpiriitLabs Auth Log Bundle
 
-A comprehensive Symfony bundle for logging authentication events including successful logins. This bundle provides detailed logging with IP address tracking, user agent information, geolocation data, and email notifications.
+With this Symfony bundle you can send an email alert when a user logs in from a new context — for example:
+
+* a different IP address
+* a different location (geolocation)
+* a different User Agent (device/browser)
+
+
+This helps detect unusual login activity early and increases visibility into authentication events. 
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PHP Version](https://img.shields.io/badge/php-8.2%2B-blue.svg)](https://php.net)
 [![Symfony](https://img.shields.io/badge/symfony-6.4%2B%7C7.0%2B-blue.svg)](https://symfony.com)
 [![Latest Stable Version](https://poser.pugx.org/spiriitlabs/auth-log-bundle/v/stable.svg)](https://packagist.org/packages/spiriitlabs/auth-log-bundle)
 [![CI Tests](https://github.com/SpiriitLabs/auth-log-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/SpiriitLabs/auth-log-bundle/actions/workflows/ci.yml)
+
+## OWASP Authentication Best Practices
+
+To ensure strong authentication security, this bundle aligns with guidance from the OWASP Authentication Cheat Sheet by:
+
+Treating authentication failures or unusual logins as events worthy of detection and alerting
+
+Ensuring all login events are logged, especially when the context changes (IP, location, device)
+
+Using secure channels (TLS) for all authentication-related operations
+
+Validating and normalizing incoming data (e.g. user agent strings, IP addresses) to avoid ambiguity or spoofing
 
 ## Features
 
