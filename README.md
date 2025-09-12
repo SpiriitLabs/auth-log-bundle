@@ -390,4 +390,3 @@ This bundle is released under the MIT License. See the [LICENSE](LICENSE) file f
 ## Support
 
 For questions and support, please contact [dev@spiriit.com](mailto:dev@spiriit.com) or open an issue on GitHub.
-# auth-log-bundle
