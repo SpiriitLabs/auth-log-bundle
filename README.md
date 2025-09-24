@@ -230,12 +230,12 @@ class UserAuthenticationLogFactory implements AuthenticationLogFactoryInterface
         // you can also use a different storage system like Redis, ElasticSearch, etc.
 
         return (bool) $this->entityManager->createQueryBuilder()
-            ->select('al')
+            ->select('uu')
             ->from(UserAuthenticationLog::class, 'uu')
             ->innerJoin('uu.user', 'u')
             ->andWhere('uu.ipAddress = :ip')
             ->andWhere('uu.userAgent = :ua')
-            ->andWhere('uu.id = :user_id')
+            ->andWhere('u.id = :user_id')
             ->setParameter('user_id', $userReference->id)
             ->setParameter('ip', $userInformation->ipAddress)
             ->setParameter('ua', $userInformation->userAgent)
