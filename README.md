@@ -378,6 +378,7 @@ Run the test suite:
 ```bash
 vendor/bin/simple-phpunit
 ```
+Use code quality github
 
 ## Contributing
 
