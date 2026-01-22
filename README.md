@@ -166,7 +166,7 @@ class UserAuthenticationLog extends AbstractAuthenticationLog
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: User:class)]
+    #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private User $user;
 
@@ -203,13 +203,19 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Entity\UserAuthenticationLog;
-use Spiriit\Bundle\AuthLogBundle\AuthenticationLogFactoryInterface;
-use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticableLogInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Spiriit\Bundle\AuthLogBundle\AuthenticationLogFactory\AuthenticationLogFactoryInterface;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
 class UserAuthenticationLogFactory implements AuthenticationLogFactoryInterface
 {
-    public function createFrom(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+    ) {
+    }
+
+    public function createUserReference(string $userIdentifier): UserReference
     {
         $realCustomer = $this->entityManager->getRepository(User::class)->findOneBy(['identifiant' => $userIdentifier]);
 
@@ -219,7 +225,7 @@ class UserAuthenticationLogFactory implements AuthenticationLogFactoryInterface
 
         return new UserReference(
             type: 'customer',
-            id: (string) $realCustomer->getCustomerId(),
+            id: (string) $realCustomer->getId(),
         );
     }
 
@@ -243,7 +249,7 @@ class UserAuthenticationLogFactory implements AuthenticationLogFactoryInterface
             ->getOneOrNullResult() ?? false;
     }
 
-    public function supports(AuthenticableLogInterface $authenticableLog): string
+    public function supports(): string
     {
         return 'customer'; // This should match the value returned by getAuthenticationLogFactoryName()
     }
@@ -292,7 +298,7 @@ The parameter mailer accepts any service that implements `Spiriit\Bundle\AuthLog
 
 ## Events
 
-The bundle will dispatch an event `AuthenticationLogEvents::LOGIN` - your job is to catch it.
+The bundle will dispatch an event `AuthenticationLogEvents::NEW_DEVICE` - your job is to catch it.
 
 Why? Because you decide how the entity gets persisted (the bundle won’t do it for you).
 Once you’ve saved it, make sure to mark the event as persisted, so the bundle can keep rolling smoothly.
