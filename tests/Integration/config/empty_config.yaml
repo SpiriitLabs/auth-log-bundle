@@ -1,0 +1,7 @@
+framework:
+    test: true
+    secret: secret
+    translator:
+        default_path: 'translations'
+
+spiriit_auth_log: ~

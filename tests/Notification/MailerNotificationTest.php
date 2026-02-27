@@ -13,7 +13,6 @@ namespace Spiriit\Bundle\Tests\Notification;
 
 use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
-use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticableLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\LocateUserInformation\LocateValues;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Notification\MailerNotification;
@@ -22,45 +21,28 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class MailerNotificationTest extends TestCase
 {
-    public function testSend(): void
+    public function testItShouldSendEmailNotification(): void
     {
+        // Arrange
         $mailer = $this->createMock(MailerInterface::class);
-        $mailer->expects(self::once())->method('send');
 
         $notification = new MailerNotification(
             mailer: $mailer,
-            translator: $this->createMock(TranslatorInterface::class),
+            translator: $this->createStub(TranslatorInterface::class),
             addresses: [
                 'fromEmail' => 'test@email.fr',
                 'fromName' => 'Test',
             ],
         );
 
-        new class implements AuthenticableLogInterface {
-            public function getAuthenticationLogFactoryName(): string
-            {
-                return 'user';
-            }
-
-            public function getAuthenticationLogsToEmail(): string
-            {
-                return 'my_email@test.fr';
-            }
-
-            public function getAuthenticationLogsToEmailName(): string
-            {
-                return 'Jon Smith';
-            }
-        };
-
         $userReference = new UserReference(
-            type: 'user',
-            id: '1',
+            userIdentifier: '1',
+            email: 'email@test.com',
+            displayName: 'Jon Smith',
         );
-        $userReference->setNotificationParameters(
-            toEmail: 'email@test.com',
-            toEmailName: 'Jon Smith'
-        );
+
+        // Act
+        $mailer->expects(self::once())->method('send');
 
         $notification->send(
             userInformation: new UserInformation(

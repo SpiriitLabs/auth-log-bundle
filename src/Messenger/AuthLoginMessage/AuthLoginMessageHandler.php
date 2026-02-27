@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the spiriitlabs/auth-log-bundle package.
  * Copyright (c) SpiriitLabs <https://www.spiriit.com/>
@@ -13,10 +15,10 @@ use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-class AuthLoginMessageHandler
+final class AuthLoginMessageHandler
 {
     public function __construct(
-        private LoginService $loginService,
+        private readonly LoginService $loginService,
     ) {
     }
 

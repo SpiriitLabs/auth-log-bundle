@@ -12,19 +12,19 @@ declare(strict_types=1);
 namespace Spiriit\Bundle\AuthLogBundle\Listener;
 
 use Spiriit\Bundle\AuthLogBundle\DTO\LoginParameterDto;
-use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticableLogInterface;
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
 use Spiriit\Bundle\AuthLogBundle\Messenger\AuthLoginMessage\AuthLoginMessage;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 
-class LoginListener
+#[AsEventListener(event: LoginSuccessEvent::class)]
+final class LoginListener
 {
-    private ?MessageBusInterface $bus = null;
-
     public function __construct(
         private readonly LoginService $loginService,
+        private readonly ?MessageBusInterface $messageBus = null,
     ) {
     }
 
@@ -32,31 +32,26 @@ class LoginListener
     {
         $user = $event->getUser();
 
-        if (!$user instanceof AuthenticableLogInterface) {
+        if (!$user instanceof AuthLogUserInterface) {
             return;
         }
 
         $request = $event->getRequest();
 
-        /** @var UserInterface&AuthenticableLogInterface $user */
-        $loginParameterDto = new LoginParameterDto(
-            factoryName: $user->getAuthenticationLogFactoryName(),
+        $dto = new LoginParameterDto(
             userIdentifier: $user->getUserIdentifier(),
-            toEmail: $user->getAuthenticationLogsToEmail(),
-            toEmailName: $user->getAuthenticationLogsToEmailName(),
-            clientIp: $request->getClientIp(),
-            userAgent: $request->headers->get('User-Agent'),
+            toEmail: $user->getAuthLogEmail(),
+            toEmailName: $user->getAuthLogDisplayName(),
+            clientIp: $request->getClientIp() ?? '',
+            userAgent: $request->headers->get('User-Agent', ''),
         );
 
-        if (null === $this->bus) {
-            $this->loginService->execute($loginParameterDto);
-        } elseif ($this->bus instanceof MessageBusInterface) {
-            $this->bus->dispatch(new AuthLoginMessage($loginParameterDto));
-        }
-    }
+        if (null !== $this->messageBus) {
+            $this->messageBus->dispatch(new AuthLoginMessage($dto));
 
-    public function setMessageBus(?MessageBusInterface $messageBus = null): void
-    {
-        $this->bus = $messageBus;
+            return;
+        }
+
+        $this->loginService->execute($dto);
     }
 }

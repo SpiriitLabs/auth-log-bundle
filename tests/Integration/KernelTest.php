@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the spiriitlabs/auth-log-bundle package.
  * Copyright (c) SpiriitLabs <https://www.spiriit.com/>
@@ -35,7 +37,7 @@ class KernelTest extends KernelTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<string, mixed> $options
      */
     protected static function createKernel(array $options = []): KernelInterface
     {
@@ -50,7 +52,7 @@ class KernelTest extends KernelTestCase
 
         self::assertArrayHasKey('transports', $config);
         self::assertArrayHasKey('sender_email', $config['transports']);
-        self::assertArrayHasKey('sender_email', $config['transports']);
+        self::assertArrayHasKey('sender_name', $config['transports']);
         self::assertInstanceOf(MailerInterface::class, self::getContainer()->get('spiriit_auth_log.transports.mailer'));
         self::assertInstanceOf(FetchUserInformation::class, self::getContainer()->get('spiriit_auth_log.fetch_user_information'));
         self::assertInstanceOf(MailerNotification::class, self::getContainer()->get('spiriit_auth_log.notification'));
@@ -86,6 +88,6 @@ class KernelTest extends KernelTestCase
         $config = self::getContainer()->getParameter('spiriit_auth_log.config');
 
         self::assertArrayHasKey('messenger', $config);
-        self::assertNotNull(self::getContainer()->get('spiriit_auth_log.login_message_handler'));
+        self::assertTrue(self::getContainer()->has('spiriit_auth_log.login_message_handler'));
     }
 }

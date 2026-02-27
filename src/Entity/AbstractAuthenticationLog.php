@@ -63,12 +63,12 @@ abstract class AbstractAuthenticationLog
 
     public function getLocation(): ?LocateValues
     {
-        if (!empty($this->location)) {
+        if (empty($this->location)) {
             return null;
         }
 
         return LocateValues::fromArray($this->location);
     }
 
-    abstract public function getUser(): AuthenticableLogInterface;
+    abstract public function getUser(): AuthLogUserInterface;
 }
