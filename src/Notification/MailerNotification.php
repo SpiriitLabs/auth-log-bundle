@@ -34,8 +34,8 @@ final readonly class MailerNotification implements NotificationInterface
     {
         $templateEmail = (new TemplatedEmail())
             ->to(new Address(
-                address: $userReference->getEmail(),
-                name: $userReference->getDisplayName())
+                address: $userReference->email,
+                name: $userReference->displayName)
             )
             ->from(new Address(address: $this->addresses['fromEmail'], name: $this->addresses['fromName']))
             ->subject(subject: $this->translator->trans('notification.subject', [], 'SpiriitAuthLogBundle'))

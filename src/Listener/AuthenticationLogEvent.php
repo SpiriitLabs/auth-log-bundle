@@ -11,37 +11,24 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Listener;
 
-use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Symfony\Contracts\EventDispatcher\Event;
 
 class AuthenticationLogEvent extends Event
 {
-    private bool $logHandled = false;
-
     public function __construct(
-        private UserReference $userReference,
-        private UserInformation $userInformation,
+        private readonly string $userIdentifier,
+        private readonly UserInformation $userInformation,
     ) {
     }
 
-    public function getUserReference(): UserReference
+    public function userIdentifier(): string
     {
-        return $this->userReference;
+        return $this->userIdentifier;
     }
 
-    public function getUserInformation(): UserInformation
+    public function userInformation(): UserInformation
     {
         return $this->userInformation;
-    }
-
-    public function isLogHandled(): bool
-    {
-        return $this->logHandled;
-    }
-
-    public function markAsHandled(): void
-    {
-        $this->logHandled = true;
     }
 }

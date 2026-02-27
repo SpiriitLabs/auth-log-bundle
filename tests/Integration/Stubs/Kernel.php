@@ -28,7 +28,7 @@ class Kernel extends BaseKernel
     }
 
     /**
-     * {@inheritdoc}
+     * @return array<\Symfony\Component\HttpKernel\Bundle\BundleInterface>
      */
     public function registerBundles(): array
     {

@@ -11,11 +11,11 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Entity;
 
-interface AuthenticableLogInterface
+use Symfony\Component\Security\Core\User\UserInterface;
+
+interface AuthLogUserInterface extends UserInterface
 {
-    public function getAuthenticationLogFactoryName(): string;
+    public function getAuthLogEmail(): string;
 
-    public function getAuthenticationLogsToEmail(): string;
-
-    public function getAuthenticationLogsToEmailName(): string;
+    public function getAuthLogDisplayName(): string;
 }
