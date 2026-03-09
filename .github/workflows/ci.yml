@@ -56,3 +56,51 @@ jobs:
 
       - name: "Run PHPUnit Tests"
         run: "composer test"
+
+  coverage:
+    runs-on: ubuntu-latest
+    name: "Code Coverage"
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v6"
+        with:
+          fetch-depth: 2
+
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: curl,mbstring,xdebug
+          ini-values: date.timezone="Europe/Paris"
+          coverage: xdebug
+          tools: "composer:v2,flex"
+
+      - name: "Cache Composer packages"
+        uses: "actions/cache@v5"
+        with:
+          path: "~/.composer/cache"
+          key: "coverage-php-8.4-composer-${{ hashFiles('composer.json') }}"
+          restore-keys: "coverage-php-"
+
+      - name: "Install dependencies"
+        run: "composer update --prefer-dist"
+        env:
+          SYMFONY_REQUIRE: "7.4.*"
+
+      - name: "Run tests with coverage"
+        run: "XDEBUG_MODE=coverage vendor/bin/simple-phpunit --coverage-clover=coverage.xml --coverage-text --colors=never"
+
+      - name: "Check 100% code coverage"
+        run: |
+          COVERAGE=$(php -r '
+            $xml = new SimpleXMLElement(file_get_contents("coverage.xml"));
+            $metrics = $xml->project->metrics;
+            $total = (int) $metrics["statements"];
+            $covered = (int) $metrics["coveredstatements"];
+            echo $total > 0 ? round(($covered / $total) * 100, 2) : 0;
+          ')
+          echo "Line coverage: ${COVERAGE}%"
+          if [ "$(echo "$COVERAGE < 100" | bc -l)" -eq 1 ]; then
+            echo "::error::Code coverage is ${COVERAGE}%, but 100% is required."
+            exit 1
+          fi

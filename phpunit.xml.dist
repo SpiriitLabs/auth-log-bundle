@@ -28,6 +28,16 @@
         </testsuite>
     </testsuites>
 
+    <coverage>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+        <exclude>
+            <directory suffix=".php">./src/Resources</directory>
+            <file>./src/FetchUserInformation/LocateUserInformation/Geoip2LocateMethod.php</file>
+        </exclude>
+    </coverage>
+
     <listeners>
         <listener class="Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
     </listeners>

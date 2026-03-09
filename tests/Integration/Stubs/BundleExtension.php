@@ -10,8 +10,10 @@
 namespace Spiriit\Bundle\Tests\Integration\Stubs;
 
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogCreatorInterface;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
+use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\AuthenticationLogRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -28,6 +30,10 @@ class BundleExtension extends Extension
         $creator = new Definition(StubAuthenticationLogCreator::class);
         $creator->setPublic(true);
         $container->setDefinition(AuthenticationLogCreatorInterface::class, $creator);
+
+        $notification = new Definition(StubNotification::class);
+        $notification->setPublic(true);
+        $container->setDefinition('app.custom_notification', $notification);
     }
 }
 
@@ -59,5 +65,15 @@ class StubAuthenticationLogCreator implements AuthenticationLogCreatorInterface
                 throw new \RuntimeException('Stub');
             }
         };
+    }
+}
+
+/**
+ * @internal
+ */
+class StubNotification implements NotificationInterface
+{
+    public function send(UserInformation $userInformation, UserReference $userReference): void
+    {
     }
 }

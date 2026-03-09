@@ -23,7 +23,7 @@ class FetchUserInformation
         if (null !== $this->fetchUserInformationMethod) {
             $location = $this->fetchUserInformationMethod->locate($ipAddress);
         } else {
-            $location = [];
+            $location = null;
         }
 
         return new UserInformation(
