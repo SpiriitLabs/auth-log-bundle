@@ -101,7 +101,7 @@ final class SpiriitAuthLogBundle extends AbstractBundle
     {
         $builder->setParameter('spiriit_auth_log.config', $config);
 
-        $container->import('Resources/config/new_device.php');
+        $container->import('../config/new_device.php');
 
         // Notification
         if ('mailer' === $config['transports']['mailer']) {
@@ -153,7 +153,7 @@ final class SpiriitAuthLogBundle extends AbstractBundle
 
         // Messenger (async)
         if ($config['messenger']) {
-            $container->import('Resources/config/messenger.php');
+            $container->import('../config/messenger.php');
 
             $builder->getDefinition('spiriit_auth_log.login_listener')
                 ->setArgument('$messageBus', new Reference($config['messenger']));

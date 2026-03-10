@@ -4,6 +4,6 @@ parameters:
 		- src
 		- tests
 	excludePaths:
-		- src/Resources/config
+		- config
 	ignoreErrors:
 		- '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface::#'

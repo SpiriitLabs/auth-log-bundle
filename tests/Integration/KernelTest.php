@@ -186,7 +186,6 @@ class KernelTest extends KernelTestCase
 
         self::assertInstanceOf(NotificationInterface::class, $notification);
         self::assertInstanceOf(StubNotification::class, $notification);
-        self::assertNotInstanceOf(MailerNotification::class, $notification);
     }
 
     public function testDefaultNotificationIsMailerNotification(): void

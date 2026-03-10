@@ -106,11 +106,7 @@ class ContainerLintTest extends KernelTestCase
                 \sprintf('Service "%s" should be registered (config: %s)', $id, $config)
             );
 
-            $service = $container->get($id);
-            self::assertIsObject(
-                $service,
-                \sprintf('Service "%s" should be instantiable without error (config: %s)', $id, $config)
-            );
+            $container->get($id);
         }
     }
 
@@ -125,7 +121,7 @@ class ContainerLintTest extends KernelTestCase
 
         foreach (self::MAILER_SERVICES as $id) {
             self::assertTrue($container->has($id), \sprintf('Service "%s" should be registered', $id));
-            self::assertIsObject($container->get($id), \sprintf('Service "%s" should be instantiable', $id));
+            $container->get($id);
         }
     }
 
@@ -171,7 +167,6 @@ class ContainerLintTest extends KernelTestCase
         $notification = $container->get('spiriit_auth_log.notification');
         self::assertInstanceOf(NotificationInterface::class, $notification);
         self::assertInstanceOf(StubNotification::class, $notification);
-        self::assertNotInstanceOf(MailerNotification::class, $notification);
 
         // Rest of the dependency chain still works
         self::assertInstanceOf(LoginService::class, $container->get('spiriit_auth_log.login_service'));
