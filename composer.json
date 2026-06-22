@@ -1,8 +1,25 @@
 {
     "name": "spiriitlabs/auth-log-bundle",
-    "description": "A Symfony bundle to log authentication events",
+    "description": "Symfony authentication audit log with geolocation, device detection and security notifications",
     "type": "symfony-bundle",
     "license": "MIT",
+    "keywords": [
+        "symfony",
+        "symfony-bundle",
+        "authentication",
+        "login",
+        "login-history",
+        "login-tracking",
+        "security",
+        "audit-log",
+        "audit-trail",
+        "geoip",
+        "geolocation",
+        "device-detection",
+        "security-alert",
+        "user-activity",
+        "owasp"
+    ],
     "prefer-stable": true,
     "authors": [
         {
