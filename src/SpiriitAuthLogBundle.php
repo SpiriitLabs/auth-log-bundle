@@ -21,6 +21,7 @@ use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\LocateUserInformation\IpAp
 use Spiriit\Bundle\AuthLogBundle\Notification\MailerNotification;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\AuthenticationLogRepositoryInterface;
+use Spiriit\Bundle\AuthLogBundle\Repository\ConfirmableAuthenticationLogRepositoryInterface;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -40,6 +41,8 @@ final class SpiriitAuthLogBundle extends AbstractBundle
             ->addTag('spiriit_auth_log.creator');
         $container->registerForAutoconfiguration(AuthenticationLogHandlerInterface::class)
             ->addTag('spiriit_auth_log.handler');
+        $container->registerForAutoconfiguration(ConfirmableAuthenticationLogRepositoryInterface::class)
+            ->addTag('spiriit_auth_log.confirmable_repository');
     }
 
     public function configure(DefinitionConfigurator $definition): void
@@ -88,6 +91,25 @@ final class SpiriitAuthLogBundle extends AbstractBundle
                             return null !== $v && ($v['provider'] ?? null) === 'geoip2' && empty($v['geoip2_database_path']);
                         })
                         ->thenInvalid('The "geoip2_database_path" field is required when using the "geoip2" provider.')
+                    ->end()
+                ->end()
+                ->arrayNode('confirmation')
+                    ->addDefaultsIfNotSet()
+                    ->info('Enables the "It was me / It wasn\'t me" signed confirmation links in the notification email.')
+                    ->children()
+                        ->booleanNode('enabled')
+                            ->defaultFalse()
+                        ->end()
+                        ->scalarNode('token_ttl')
+                            ->defaultValue('3 days')
+                            ->cannotBeEmpty()
+                            ->info('Lifetime of a confirmation link, as a relative date expression (e.g. "3 days", "12 hours").')
+                        ->end()
+                        ->scalarNode('route_name')
+                            ->defaultValue('spiriit_auth_log_confirm')
+                            ->cannotBeEmpty()
+                            ->info('Name of the route pointing to the confirmation controller. Override it if you declare your own route instead of importing the bundle one.')
+                        ->end()
                     ->end()
                 ->end()
             ->end()
@@ -150,6 +172,20 @@ final class SpiriitAuthLogBundle extends AbstractBundle
 
         // Event dispatcher alias
         $builder->setAlias('spiriit_auth_log.login_event_dispatcher', 'event_dispatcher');
+
+        // Confirmation ("It was me / It wasn't me" signed links)
+        if ($config['confirmation']['enabled']) {
+            $builder->setParameter('spiriit_auth_log.confirmation.token_ttl', $config['confirmation']['token_ttl']);
+            $builder->setParameter('spiriit_auth_log.confirmation.route_name', $config['confirmation']['route_name']);
+
+            $container->import('../config/confirmation.php');
+
+            $builder->getDefinition('spiriit_auth_log.handler')
+                ->setArgument('$confirmationTokenGenerator', new Reference('spiriit_auth_log.confirmation_token_generator'));
+
+            $builder->getDefinition('spiriit_auth_log.new_device_notifier')
+                ->setArgument('$confirmationUrlGenerator', new Reference('spiriit_auth_log.confirmation_url_generator'));
+        }
 
         // Messenger (async)
         if ($config['messenger']) {

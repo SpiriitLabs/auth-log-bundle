@@ -11,6 +11,7 @@ namespace Spiriit\Bundle\Tests\Integration\Stubs;
 
 use Spiriit\Bundle\AuthLogBundle\SpiriitAuthLogBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 
@@ -32,11 +33,17 @@ class Kernel extends BaseKernel
      */
     public function registerBundles(): array
     {
-        return [
+        $bundles = [
             new FrameworkBundle(),
             new SpiriitAuthLogBundle(),
             new Bundle(),
         ];
+
+        if ('confirmation' === $this->config) {
+            $bundles[] = new TwigBundle();
+        }
+
+        return $bundles;
     }
 
     /**

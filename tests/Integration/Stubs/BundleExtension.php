@@ -10,11 +10,14 @@
 namespace Spiriit\Bundle\Tests\Integration\Stubs;
 
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogCreatorInterface;
+use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationLinks;
 use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\AuthenticationLogRepositoryInterface;
+use Spiriit\Bundle\AuthLogBundle\Repository\ConfirmableAuthenticationLogRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -34,6 +37,10 @@ class BundleExtension extends Extension
         $notification = new Definition(StubNotification::class);
         $notification->setPublic(true);
         $container->setDefinition('app.custom_notification', $notification);
+
+        $confirmableRepository = new Definition(StubConfirmableAuthenticationLogRepository::class);
+        $confirmableRepository->setPublic(true);
+        $container->setDefinition(ConfirmableAuthenticationLogRepositoryInterface::class, $confirmableRepository);
     }
 }
 
@@ -73,7 +80,22 @@ class StubAuthenticationLogCreator implements AuthenticationLogCreatorInterface
  */
 class StubNotification implements NotificationInterface
 {
-    public function send(UserInformation $userInformation, UserReference $userReference): void
+    public function send(UserInformation $userInformation, UserReference $userReference, ?ConfirmationLinks $confirmationLinks = null): void
+    {
+    }
+}
+
+/**
+ * @internal
+ */
+class StubConfirmableAuthenticationLogRepository implements ConfirmableAuthenticationLogRepositoryInterface
+{
+    public function findOneByConfirmationToken(string $confirmationToken): ?ConfirmableAuthenticationLogInterface
+    {
+        return null;
+    }
+
+    public function save(ConfirmableAuthenticationLogInterface $authenticationLog): void
     {
     }
 }

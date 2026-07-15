@@ -17,7 +17,7 @@ use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformation;
 use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogEvent;
 use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogEvents;
-use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
+use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotifier;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class LoginService
@@ -25,7 +25,7 @@ final class LoginService
     public function __construct(
         private readonly FetchUserInformation $fetchUserInformation,
         private readonly AuthenticationLogHandlerInterface $handler,
-        private readonly NotificationInterface $notifier,
+        private readonly NewDeviceNotifier $newDeviceNotifier,
         private readonly EventDispatcherInterface $dispatcher,
     ) {
     }
@@ -38,7 +38,7 @@ final class LoginService
             return;
         }
 
-        $this->handler->handle($dto->userIdentifier, $userInformation);
+        $log = $this->handler->handle($dto->userIdentifier, $userInformation);
 
         $this->dispatcher->dispatch(
             new AuthenticationLogEvent($dto->userIdentifier, $userInformation),
@@ -50,6 +50,6 @@ final class LoginService
             email: $dto->toEmail,
             displayName: $dto->toEmailName,
         );
-        $this->notifier->send($userInformation, $userReference);
+        $this->newDeviceNotifier->notify($userInformation, $userReference, $log);
     }
 }

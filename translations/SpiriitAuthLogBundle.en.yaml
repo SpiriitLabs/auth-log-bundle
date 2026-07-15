@@ -1,2 +1,32 @@
 notification:
     subject: 'New login activity on your app'
+
+confirmation:
+    email:
+        acknowledge: 'It was me'
+        disavow: "It wasn't me"
+    show:
+        acknowledge:
+            title: 'Confirm this login'
+            message: 'You are about to confirm that this login was made by you.'
+            button: 'Yes, it was me'
+        disavow:
+            title: 'Report this login'
+            message: 'You are about to report that this login was not made by you.'
+            button: "No, it wasn't me"
+    result:
+        acknowledged:
+            title: 'Login confirmed'
+            message: 'Thank you, this login has been acknowledged as yours.'
+        disavowed:
+            title: 'Login reported'
+            message: 'Thank you, we recorded that this login was not made by you. Consider changing your password.'
+        already_reviewed:
+            title: 'Already handled'
+            message: 'This login has already been handled. No further action is required.'
+        invalid:
+            title: 'Invalid link'
+            message: 'This link is invalid. Please use the link provided in your email.'
+        expired:
+            title: 'Expired link'
+            message: 'This link has expired. If you are unsure about this login, change your password.'

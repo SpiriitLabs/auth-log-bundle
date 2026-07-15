@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Notification;
 
+use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationLinks;
 use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -30,7 +31,7 @@ final readonly class MailerNotification implements NotificationInterface
     ) {
     }
 
-    public function send(UserInformation $userInformation, UserReference $userReference): void
+    public function send(UserInformation $userInformation, UserReference $userReference, ?ConfirmationLinks $confirmationLinks = null): void
     {
         $templateEmail = (new TemplatedEmail())
             ->to(new Address(
@@ -44,6 +45,7 @@ final readonly class MailerNotification implements NotificationInterface
                 [
                     'userInformation' => $userInformation,
                     'authenticableLog' => $userReference,
+                    'confirmationLinks' => $confirmationLinks,
                 ],
             );
 

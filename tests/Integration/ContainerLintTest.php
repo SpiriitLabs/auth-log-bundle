@@ -194,6 +194,35 @@ class ContainerLintTest extends KernelTestCase
     }
 
     /**
+     * When confirmation is enabled, the token generator, URL generator and
+     * confirmation controller must all be registered and instantiable.
+     */
+    public function testConfirmationServicesAreInstantiableWhenEnabled(): void
+    {
+        self::bootKernel(['config' => 'confirmation']);
+        $container = self::getContainer();
+
+        foreach (['spiriit_auth_log.confirmation_token_generator', 'spiriit_auth_log.confirmation_url_generator', 'spiriit_auth_log.confirmation_controller'] as $id) {
+            self::assertTrue($container->has($id), \sprintf('Service "%s" should be registered', $id));
+            $container->get($id);
+        }
+    }
+
+    /**
+     * When confirmation is disabled (default), none of its services must leak
+     * into the container.
+     */
+    public function testConfirmationServicesAreAbsentWhenDisabled(): void
+    {
+        self::bootKernel(['config' => 'minimal']);
+        $container = self::getContainer();
+
+        self::assertFalse($container->has('spiriit_auth_log.confirmation_token_generator'));
+        self::assertFalse($container->has('spiriit_auth_log.confirmation_url_generator'));
+        self::assertFalse($container->has('spiriit_auth_log.confirmation_controller'));
+    }
+
+    /**
      * @return iterable<string, array{string}>
      */
     public static function configProvider(): iterable

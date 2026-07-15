@@ -9,13 +9,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Spiriit\Bundle\AuthLogBundle\Listener;
+namespace Spiriit\Bundle\AuthLogBundle\Confirmation;
 
-class AuthenticationLogEvents
+use Symfony\Component\String\ByteString;
+
+final class ConfirmationTokenGenerator
 {
-    public const NEW_DEVICE = 'spiriit.auth_log.new_device';
-
-    public const LOGIN_ACKNOWLEDGED = 'spiriit.auth_log.login_acknowledged';
-
-    public const LOGIN_DISAVOWED = 'spiriit.auth_log.login_disavowed';
+    public function generate(): ConfirmationToken
+    {
+        return new ConfirmationToken(ByteString::fromRandom(32)->toString());
+    }
 }

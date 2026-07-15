@@ -11,11 +11,12 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\AuthenticationLog;
 
+use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
 interface AuthenticationLogHandlerInterface
 {
     public function isKnown(string $userIdentifier, UserInformation $userInformation): bool;
 
-    public function handle(string $userIdentifier, UserInformation $userInformation): void;
+    public function handle(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog;
 }

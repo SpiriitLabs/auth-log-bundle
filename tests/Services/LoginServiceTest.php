@@ -14,8 +14,10 @@ namespace Spiriit\Bundle\Tests\Services;
 use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogHandlerInterface;
 use Spiriit\Bundle\AuthLogBundle\DTO\LoginParameterDto;
+use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformation;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
+use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotifier;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -41,15 +43,15 @@ class LoginServiceTest extends TestCase
         $handler = $this->createMock(AuthenticationLogHandlerInterface::class);
         $handler->method('isKnown')->willReturn(true);
 
-        $notifier = $this->createMock(NotificationInterface::class);
+        $notification = $this->createMock(NotificationInterface::class);
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
 
         // Act
         $handler->expects(self::never())->method('handle');
-        $notifier->expects(self::never())->method('send');
+        $notification->expects(self::never())->method('send');
         $dispatcher->expects(self::never())->method('dispatch');
 
-        $service = new LoginService($fetchUserInformation, $handler, $notifier, $dispatcher);
+        $service = new LoginService($fetchUserInformation, $handler, new NewDeviceNotifier($notification), $dispatcher);
         $service->execute($dto);
     }
 
@@ -72,15 +74,15 @@ class LoginServiceTest extends TestCase
         $handler = $this->createMock(AuthenticationLogHandlerInterface::class);
         $handler->method('isKnown')->willReturn(false);
 
-        $notifier = $this->createMock(NotificationInterface::class);
+        $notification = $this->createMock(NotificationInterface::class);
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
 
         // Act
-        $handler->expects(self::once())->method('handle');
-        $notifier->expects(self::once())->method('send');
+        $handler->expects(self::once())->method('handle')->willReturn($this->createStub(AbstractAuthenticationLog::class));
+        $notification->expects(self::once())->method('send');
         $dispatcher->expects(self::once())->method('dispatch');
 
-        $service = new LoginService($fetchUserInformation, $handler, $notifier, $dispatcher);
+        $service = new LoginService($fetchUserInformation, $handler, new NewDeviceNotifier($notification), $dispatcher);
         $service->execute($dto);
     }
 }
