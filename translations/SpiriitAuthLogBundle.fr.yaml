@@ -23,7 +23,7 @@ confirmation:
             message: "Merci, nous avons enregistré que cette connexion ne venait pas de vous. Pensez à changer votre mot de passe."
         already_reviewed:
             title: 'Déjà traité'
-            message: 'Cette connexion a déjà été traitée. Aucune action supplémentaire n\'est nécessaire.'
+            message: "Cette connexion a déjà été traitée. Aucune action supplémentaire n'est nécessaire."
         invalid:
             title: 'Lien invalide'
             message: 'Ce lien est invalide. Veuillez utiliser le lien fourni dans votre e-mail.'
