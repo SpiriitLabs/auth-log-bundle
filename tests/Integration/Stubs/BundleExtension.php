@@ -28,26 +28,27 @@ class BundleExtension extends Extension
     {
         $repository = new Definition(StubAuthenticationLogRepository::class);
         $repository->setPublic(true);
-        $container->setDefinition(AuthenticationLogRepositoryInterface::class, $repository);
+        $repository->setAutoconfigured(true);
+        $container->setDefinition(StubAuthenticationLogRepository::class, $repository);
 
         $creator = new Definition(StubAuthenticationLogCreator::class);
         $creator->setPublic(true);
-        $container->setDefinition(AuthenticationLogCreatorInterface::class, $creator);
+        $creator->setAutoconfigured(true);
+        $container->setDefinition(StubAuthenticationLogCreator::class, $creator);
 
         $notification = new Definition(StubNotification::class);
         $notification->setPublic(true);
         $container->setDefinition('app.custom_notification', $notification);
-
-        $confirmableRepository = new Definition(StubConfirmableAuthenticationLogRepository::class);
-        $confirmableRepository->setPublic(true);
-        $container->setDefinition(ConfirmableAuthenticationLogRepositoryInterface::class, $confirmableRepository);
     }
 }
 
 /**
+ * Mirrors the README: a single repository implements every bundle interface,
+ * so autoconfiguration tags it and the bundle aliases the interfaces to it.
+ *
  * @internal
  */
-class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInterface
+class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInterface, ConfirmableAuthenticationLogRepositoryInterface
 {
     public function save(AbstractAuthenticationLog $log): void
     {
@@ -56,6 +57,11 @@ class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInte
     public function findExistingLog(string $userIdentifier, UserInformation $userInformation): bool
     {
         return false;
+    }
+
+    public function findOneByConfirmationToken(string $confirmationToken): (AbstractAuthenticationLog&ConfirmableAuthenticationLogInterface)|null
+    {
+        return null;
     }
 }
 
@@ -82,25 +88,5 @@ class StubNotification implements NotificationInterface
 {
     public function send(UserInformation $userInformation, UserReference $userReference, ?ConfirmationLinks $confirmationLinks = null): void
     {
-    }
-}
-
-/**
- * @internal
- */
-class StubConfirmableAuthenticationLogRepository implements ConfirmableAuthenticationLogRepositoryInterface
-{
-    public function findOneByConfirmationToken(string $confirmationToken): (AbstractAuthenticationLog&ConfirmableAuthenticationLogInterface)|null
-    {
-        return null;
-    }
-
-    public function save(AbstractAuthenticationLog $log): void
-    {
-    }
-
-    public function findExistingLog(string $userIdentifier, UserInformation $userInformation): bool
-    {
-        return false;
     }
 }

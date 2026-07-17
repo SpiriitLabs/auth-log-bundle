@@ -14,6 +14,7 @@ namespace Spiriit\Bundle\AuthLogBundle;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogCreatorInterface;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogHandlerInterface;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\DoctrineAuthenticationLogHandler;
+use Spiriit\Bundle\AuthLogBundle\DependencyInjection\Compiler\RegisterTaggedImplementationsPass;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformation;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformationMethodInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\LocateUserInformation\Geoip2LocateMethod;
@@ -43,6 +44,8 @@ final class SpiriitAuthLogBundle extends AbstractBundle
             ->addTag('spiriit_auth_log.handler');
         $container->registerForAutoconfiguration(ConfirmableAuthenticationLogRepositoryInterface::class)
             ->addTag('spiriit_auth_log.confirmable_repository');
+
+        $container->addCompilerPass(new RegisterTaggedImplementationsPass());
     }
 
     public function configure(DefinitionConfigurator $definition): void
