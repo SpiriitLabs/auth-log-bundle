@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Spiriit\Bundle\AuthLogBundle\Controller;
 
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationAction;
+use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogConfirmationEvent;
 use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogEvents;
@@ -48,7 +49,7 @@ final readonly class AuthenticationLogConfirmationController
 
         $authenticationLog = $this->confirmableAuthenticationLogRepository->findOneByConfirmationToken($token);
 
-        if (!$authenticationLog instanceof ConfirmableAuthenticationLogInterface || !$authenticationLog->isPending()) {
+        if (null === $authenticationLog || !$authenticationLog->isPending()) {
             return $this->render('already_reviewed');
         }
 
@@ -57,7 +58,7 @@ final readonly class AuthenticationLogConfirmationController
         return $this->render(ConfirmationAction::ACKNOWLEDGE === $action ? 'acknowledged' : 'disavowed');
     }
 
-    private function review(ConfirmableAuthenticationLogInterface $authenticationLog, ConfirmationAction $action): void
+    private function review(AbstractAuthenticationLog&ConfirmableAuthenticationLogInterface $authenticationLog, ConfirmationAction $action): void
     {
         match ($action) {
             ConfirmationAction::ACKNOWLEDGE => $authenticationLog->acknowledge(),

@@ -90,12 +90,17 @@ class StubNotification implements NotificationInterface
  */
 class StubConfirmableAuthenticationLogRepository implements ConfirmableAuthenticationLogRepositoryInterface
 {
-    public function findOneByConfirmationToken(string $confirmationToken): ?ConfirmableAuthenticationLogInterface
+    public function findOneByConfirmationToken(string $confirmationToken): (AbstractAuthenticationLog&ConfirmableAuthenticationLogInterface)|null
     {
         return null;
     }
 
-    public function save(ConfirmableAuthenticationLogInterface $authenticationLog): void
+    public function save(AbstractAuthenticationLog $log): void
     {
+    }
+
+    public function findExistingLog(string $userIdentifier, UserInformation $userInformation): bool
+    {
+        return false;
     }
 }
