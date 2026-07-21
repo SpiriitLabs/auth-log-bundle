@@ -48,7 +48,11 @@ final readonly class AuthenticationLogConfirmationController
 
         $authenticationLog = $this->confirmableAuthenticationLogRepository->findOneByConfirmationToken($token);
 
-        if (null === $authenticationLog || !$authenticationLog->isPending()) {
+        if (null === $authenticationLog) {
+            return $this->render('not_found', Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$authenticationLog->isPending()) {
             return $this->render('already_reviewed');
         }
 

@@ -24,6 +24,9 @@ confirmation:
         already_reviewed:
             title: 'Already handled'
             message: 'This login has already been handled. No further action is required.'
+        not_found:
+            title: 'Link no longer valid'
+            message: 'We could not find the login this link points to. It may no longer be available. If you are unsure about this login, change your password.'
         invalid:
             title: 'Invalid link'
             message: 'This link is invalid. Please use the link provided in your email.'

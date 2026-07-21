@@ -27,6 +27,15 @@ final class ConfirmationTokenGeneratorTest extends TestCase
         self::assertSame(32, \strlen($token->toString()));
     }
 
+    public function testItShouldGenerateAUrlSafeToken(): void
+    {
+        $confirmationTokenGenerator = new ConfirmationTokenGenerator();
+
+        $token = $confirmationTokenGenerator->generate()->toString();
+
+        self::assertMatchesRegularExpression('/^[A-Za-z0-9]+$/', $token);
+    }
+
     public function testItShouldGenerateUniqueTokens(): void
     {
         $confirmationTokenGenerator = new ConfirmationTokenGenerator();

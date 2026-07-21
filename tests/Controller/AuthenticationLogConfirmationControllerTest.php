@@ -139,6 +139,18 @@ final class AuthenticationLogConfirmationControllerTest extends TestCase
         self::assertSame(Response::HTTP_OK, $response->getStatusCode());
     }
 
+    public function testItShouldReportNotFoundWhenTokenMatchesNoLog(): void
+    {
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->expects(self::never())->method('dispatch');
+
+        $controller = $this->controller($this->repository($this->pendingLog()), $dispatcher, $this->twigExpecting('result', 'not_found'));
+
+        $response = $controller($this->signedRequest('acknowledge', 'unknown-token', 'POST'), ConfirmationAction::ACKNOWLEDGE, 'unknown-token');
+
+        self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+    }
+
     private function controller(ConfirmableAuthenticationLogRepositoryInterface $repository, EventDispatcherInterface $dispatcher, Environment $twig): AuthenticationLogConfirmationController
     {
         return new AuthenticationLogConfirmationController(

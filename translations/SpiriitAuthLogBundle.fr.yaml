@@ -24,6 +24,9 @@ confirmation:
         already_reviewed:
             title: 'Déjà traité'
             message: "Cette connexion a déjà été traitée. Aucune action supplémentaire n'est nécessaire."
+        not_found:
+            title: 'Lien introuvable'
+            message: "Nous n'avons pas trouvé la connexion associée à ce lien. Elle n'est peut-être plus disponible. Si vous avez un doute sur cette connexion, changez votre mot de passe."
         invalid:
             title: 'Lien invalide'
             message: 'Ce lien est invalide. Veuillez utiliser le lien fourni dans votre e-mail.'

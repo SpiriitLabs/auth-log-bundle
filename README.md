@@ -217,6 +217,7 @@ This optional feature adds two **signed links** to the notification email so the
 - The links are signed with your application secret and carry an expiration.
 - Clicking a link opens an intermediate page with a confirmation button that **POSTs** the action. This prevents email link scanners (Outlook Safe Links, etc.) from triggering the action just by following the URL.
 - A link is **single-use**: once the login is acknowledged or disavowed, replaying it shows an "already handled" page.
+- If the login no longer exists (e.g. it was pruned by your retention policy), the page reports that the link is no longer valid, with a `404` status — distinct from the "already handled" page.
 
 The bundle only records the outcome and **dispatches an event** — your application decides what to do next (e.g. force a password change or log out other sessions on a disavow).
 
