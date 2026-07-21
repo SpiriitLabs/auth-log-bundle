@@ -17,7 +17,7 @@ use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\LocateUserInformation\Loca
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
 #[ORM\MappedSuperclass]
-abstract class AbstractAuthenticationLog
+abstract class AbstractAuthenticationLog implements AuthenticationLogInterface
 {
     #[ORM\Column(type: Types::STRING, length: 45, nullable: true)]
     protected ?string $ipAddress;

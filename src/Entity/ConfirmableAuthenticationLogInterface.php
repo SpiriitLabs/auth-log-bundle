@@ -13,7 +13,7 @@ namespace Spiriit\Bundle\AuthLogBundle\Entity;
 
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationToken;
 
-interface ConfirmableAuthenticationLogInterface
+interface ConfirmableAuthenticationLogInterface extends AuthenticationLogInterface
 {
     public function enableConfirmation(ConfirmationToken $confirmationToken): void;
 

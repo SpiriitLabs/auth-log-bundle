@@ -14,7 +14,7 @@ namespace Spiriit\Bundle\AuthLogBundle\Notification;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationLinks;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationUrlGenerator;
 use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
@@ -26,12 +26,12 @@ final readonly class NewDeviceNotifier
     ) {
     }
 
-    public function notify(UserInformation $userInformation, UserReference $userReference, AbstractAuthenticationLog $authenticationLog): void
+    public function notify(UserInformation $userInformation, UserReference $userReference, AuthenticationLogInterface $authenticationLog): void
     {
         $this->notification->send($userInformation, $userReference, $this->confirmationLinks($authenticationLog));
     }
 
-    private function confirmationLinks(AbstractAuthenticationLog $authenticationLog): ?ConfirmationLinks
+    private function confirmationLinks(AuthenticationLogInterface $authenticationLog): ?ConfirmationLinks
     {
         if (null === $this->confirmationUrlGenerator) {
             return null;

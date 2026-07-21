@@ -11,10 +11,9 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Repository;
 
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 
 interface ConfirmableAuthenticationLogRepositoryInterface extends AuthenticationLogRepositoryInterface
 {
-    public function findOneByConfirmationToken(string $confirmationToken): (AbstractAuthenticationLog&ConfirmableAuthenticationLogInterface)|null;
+    public function findOneByConfirmationToken(string $confirmationToken): ?ConfirmableAuthenticationLogInterface;
 }

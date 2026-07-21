@@ -13,6 +13,7 @@ use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogCreatorInter
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationLinks;
 use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
@@ -50,7 +51,7 @@ class BundleExtension extends Extension
  */
 class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInterface, ConfirmableAuthenticationLogRepositoryInterface
 {
-    public function save(AbstractAuthenticationLog $log): void
+    public function save(AuthenticationLogInterface $log): void
     {
     }
 
@@ -59,7 +60,7 @@ class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInte
         return false;
     }
 
-    public function findOneByConfirmationToken(string $confirmationToken): (AbstractAuthenticationLog&ConfirmableAuthenticationLogInterface)|null
+    public function findOneByConfirmationToken(string $confirmationToken): ?ConfirmableAuthenticationLogInterface
     {
         return null;
     }
@@ -70,7 +71,7 @@ class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInte
  */
 class StubAuthenticationLogCreator implements AuthenticationLogCreatorInterface
 {
-    public function createLog(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog
+    public function createLog(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
     {
         return new class($userInformation) extends AbstractAuthenticationLog {
             public function getUser(): \Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface

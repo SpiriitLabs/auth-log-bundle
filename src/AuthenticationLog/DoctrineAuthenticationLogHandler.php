@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Spiriit\Bundle\AuthLogBundle\AuthenticationLog;
 
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationTokenGenerator;
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Repository\AuthenticationLogRepositoryInterface;
@@ -31,7 +31,7 @@ final readonly class DoctrineAuthenticationLogHandler implements AuthenticationL
         return $this->repository->findExistingLog($userIdentifier, $userInformation);
     }
 
-    public function handle(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog
+    public function handle(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
     {
         $log = $this->creator->createLog($userIdentifier, $userInformation);
 

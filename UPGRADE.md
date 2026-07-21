@@ -1,5 +1,67 @@
 # Upgrade Guide
 
+## Upgrading from 2.0 to 2.1
+
+Release 2.1 introduces the optional login-confirmation feature ("It was me / It wasn't me"). As part of it, the bundle's persistence contract no longer references the concrete `AbstractAuthenticationLog` mapped superclass — it now depends on the new `AuthenticationLogInterface`. This decouples the contract from Doctrine inheritance: an integrator can implement a log without extending the mapped superclass.
+
+`AbstractAuthenticationLog` implements `AuthenticationLogInterface`, so your entity needs **no change**. Only your repository signatures must be widened.
+
+### 1. Repository: widen `save()` and `createLog()` (required)
+
+`AuthenticationLogRepositoryInterface::save()` and `AuthenticationLogCreatorInterface::createLog()` now type-hint `AuthenticationLogInterface`. A parameter type cannot be narrowed in an implementation, so keeping `AbstractAuthenticationLog` triggers a fatal error — update the signatures.
+
+**Before:**
+
+```php
+use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+
+class UserAuthLogRepository extends EntityRepository implements
+    AuthenticationLogRepositoryInterface,
+    AuthenticationLogCreatorInterface
+{
+    public function save(AbstractAuthenticationLog $log): void
+    {
+        $this->getEntityManager()->persist($log);
+        $this->getEntityManager()->flush();
+    }
+
+    public function createLog(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog
+    {
+        return new UserAuthLog($userIdentifier, $userInformation);
+    }
+}
+```
+
+**After:**
+
+```php
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
+
+class UserAuthLogRepository extends EntityRepository implements
+    AuthenticationLogRepositoryInterface,
+    AuthenticationLogCreatorInterface
+{
+    public function save(AuthenticationLogInterface $log): void
+    {
+        $this->getEntityManager()->persist($log);
+        $this->getEntityManager()->flush();
+    }
+
+    public function createLog(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
+    {
+        return new UserAuthLog($userIdentifier, $userInformation);
+    }
+}
+```
+
+### Summary of Changed Interfaces
+
+| Interface | Change |
+|---|---|
+| `AuthenticationLogInterface` | **New.** Abstraction for an authentication log (`getUser()` + read accessors). `AbstractAuthenticationLog` implements it |
+| `AuthenticationLogRepositoryInterface` | `save()` now type-hints `AuthenticationLogInterface` instead of `AbstractAuthenticationLog` |
+| `AuthenticationLogCreatorInterface` | `createLog()` now returns `AuthenticationLogInterface` |
+
 ## Upgrading from 1.x to 2.0
 
 This is a major release with breaking changes. Follow this guide step by step.

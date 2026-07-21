@@ -117,7 +117,7 @@ Your repository must implement two interfaces:
 ```php
 use Doctrine\ORM\EntityRepository;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogCreatorInterface;
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Repository\AuthenticationLogRepositoryInterface;
 
@@ -125,7 +125,7 @@ class UserAuthLogRepository extends EntityRepository implements
     AuthenticationLogRepositoryInterface,
     AuthenticationLogCreatorInterface
 {
-    public function save(AbstractAuthenticationLog $log): void
+    public function save(AuthenticationLogInterface $log): void
     {
         $this->getEntityManager()->persist($log);
         $this->getEntityManager()->flush();
@@ -139,7 +139,7 @@ class UserAuthLogRepository extends EntityRepository implements
         ]);
     }
 
-    public function createLog(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog
+    public function createLog(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
     {
         $user = $this->getEntityManager()->getRepository(User::class)->findOneBy([
             'email' => $userIdentifier,
