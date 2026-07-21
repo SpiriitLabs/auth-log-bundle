@@ -1,0 +1,19 @@
+framework:
+    test: true
+    secret: secret
+    translator:
+        default_path: 'translations'
+    router:
+        resource: '%kernel.project_dir%/config/routes.php'
+        type: php
+        utf8: true
+
+twig: ~
+
+spiriit_auth_log:
+    transports:
+        sender_email: 'no-reply@yourdomain.com'
+        sender_name: 'Your App Security'
+    confirmation:
+        enabled: true
+        token_ttl: '3 days'

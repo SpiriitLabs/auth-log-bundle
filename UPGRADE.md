@@ -1,5 +1,114 @@
 # Upgrade Guide
 
+## Upgrading from 2.0 to 2.1
+
+Release 2.1 introduces the optional login-confirmation feature ("It was me / It wasn't me"). As part of it, the bundle's persistence contract no longer references the concrete `AbstractAuthenticationLog` mapped superclass — it now depends on the new `AuthenticationLogInterface`. This decouples the contract from Doctrine inheritance: an integrator can implement a log without extending the mapped superclass.
+
+`AbstractAuthenticationLog` implements `AuthenticationLogInterface`, so your log entity needs **no change**. What must change are the signatures of the bundle interfaces you implement — an incompatible signature is a fatal error at class load, so update every interface you have implemented.
+
+### 1. Repository: widen `save()` and `createLog()` (required)
+
+`AuthenticationLogRepositoryInterface::save()` and `AuthenticationLogCreatorInterface::createLog()` now type-hint `AuthenticationLogInterface`. A parameter type cannot be narrowed in an implementation, so keeping `AbstractAuthenticationLog` triggers a fatal error — update the signatures.
+
+**Before:**
+
+```php
+use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+
+class UserAuthLogRepository extends EntityRepository implements
+    AuthenticationLogRepositoryInterface,
+    AuthenticationLogCreatorInterface
+{
+    public function save(AbstractAuthenticationLog $log): void
+    {
+        $this->getEntityManager()->persist($log);
+        $this->getEntityManager()->flush();
+    }
+
+    public function createLog(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog
+    {
+        return new UserAuthLog($userIdentifier, $userInformation);
+    }
+}
+```
+
+**After:**
+
+```php
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
+
+class UserAuthLogRepository extends EntityRepository implements
+    AuthenticationLogRepositoryInterface,
+    AuthenticationLogCreatorInterface
+{
+    public function save(AuthenticationLogInterface $log): void
+    {
+        $this->getEntityManager()->persist($log);
+        $this->getEntityManager()->flush();
+    }
+
+    public function createLog(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
+    {
+        return new UserAuthLog($userIdentifier, $userInformation);
+    }
+}
+```
+
+### 2. Custom notification: accept the confirmation links parameter
+
+If you implemented `NotificationInterface` for a custom transport (Slack, SMS…), `send()` now takes a third optional argument, `?ConfirmationLinks $confirmationLinks = null`. It carries the "It was me / It wasn't me" links when the confirmation feature is enabled, and is `null` otherwise. Omitting it is a fatal signature error.
+
+**Before:**
+
+```php
+use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
+
+final class SlackNotification implements NotificationInterface
+{
+    public function send(UserInformation $userInformation, UserReference $userReference): void
+    {
+        // ...
+    }
+}
+```
+
+**After:**
+
+```php
+use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationLinks;
+use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
+
+final class SlackNotification implements NotificationInterface
+{
+    public function send(UserInformation $userInformation, UserReference $userReference, ?ConfirmationLinks $confirmationLinks = null): void
+    {
+        // Use $confirmationLinks->acknowledgeUrl / ->disavowUrl when not null
+    }
+}
+```
+
+### 3. Custom handler (advanced): `handle()` now returns the log
+
+Only relevant if you replaced the bundle's default `DoctrineAuthenticationLogHandler` with your own `AuthenticationLogHandlerInterface` implementation. `handle()` no longer returns `void` — it returns the persisted `AuthenticationLogInterface` (so the caller can pass it to the notification). Return the log you saved.
+
+```php
+// Before
+public function handle(string $userIdentifier, UserInformation $userInformation): void
+
+// After
+public function handle(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
+```
+
+### Summary of Changed Interfaces
+
+| Interface | Change |
+|---|---|
+| `AuthenticationLogInterface` | **New.** Abstraction for an authentication log (`getUser()` + read accessors). `AbstractAuthenticationLog` implements it |
+| `AuthenticationLogRepositoryInterface` | `save()` now type-hints `AuthenticationLogInterface` instead of `AbstractAuthenticationLog` |
+| `AuthenticationLogCreatorInterface` | `createLog()` now returns `AuthenticationLogInterface` |
+| `NotificationInterface` | `send()` gains a third argument `?ConfirmationLinks $confirmationLinks = null` |
+| `AuthenticationLogHandlerInterface` | `handle()` now returns `AuthenticationLogInterface` (was `void`) — advanced, only if you replaced the default handler |
+
 ## Upgrading from 1.x to 2.0
 
 This is a major release with breaking changes. Follow this guide step by step.

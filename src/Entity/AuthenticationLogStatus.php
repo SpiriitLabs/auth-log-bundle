@@ -9,13 +9,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Spiriit\Bundle\AuthLogBundle\Listener;
+namespace Spiriit\Bundle\AuthLogBundle\Entity;
 
-class AuthenticationLogEvents
+enum AuthenticationLogStatus: string
 {
-    public const NEW_DEVICE = 'spiriit.auth_log.new_device';
-
-    public const LOGIN_ACKNOWLEDGED = 'spiriit.auth_log.login_acknowledged';
-
-    public const LOGIN_DISAVOWED = 'spiriit.auth_log.login_disavowed';
+    case PENDING = 'pending';
+    case ACKNOWLEDGED = 'acknowledged';
+    case DISAVOWED = 'disavowed';
 }

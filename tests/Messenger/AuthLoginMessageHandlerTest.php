@@ -14,10 +14,12 @@ namespace Spiriit\Bundle\Tests\Messenger;
 use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogHandlerInterface;
 use Spiriit\Bundle\AuthLogBundle\DTO\LoginParameterDto;
+use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformation;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Messenger\AuthLoginMessage\AuthLoginMessage;
 use Spiriit\Bundle\AuthLogBundle\Messenger\AuthLoginMessage\AuthLoginMessageHandler;
+use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotifier;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -41,14 +43,14 @@ final class AuthLoginMessageHandlerTest extends TestCase
 
         $handler = $this->createMock(AuthenticationLogHandlerInterface::class);
         $handler->method('isKnown')->willReturn(false);
-        $handler->expects(self::once())->method('handle');
+        $handler->expects(self::once())->method('handle')->willReturn($this->createStub(AbstractAuthenticationLog::class));
 
         $notifier = $this->createMock(NotificationInterface::class);
         $notifier->expects(self::once())->method('send');
 
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
 
-        $loginService = new LoginService($fetchUserInformation, $handler, $notifier, $dispatcher);
+        $loginService = new LoginService($fetchUserInformation, $handler, new NewDeviceNotifier($notifier), $dispatcher);
         $messageHandler = new AuthLoginMessageHandler($loginService);
 
         $messageHandler(new AuthLoginMessage($dto));

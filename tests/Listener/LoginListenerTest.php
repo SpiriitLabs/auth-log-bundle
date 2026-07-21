@@ -13,11 +13,13 @@ namespace Spiriit\Bundle\Tests\Listener;
 
 use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogHandlerInterface;
+use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformation;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Listener\LoginListener;
 use Spiriit\Bundle\AuthLogBundle\Messenger\AuthLoginMessage\AuthLoginMessage;
+use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotifier;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
 use Symfony\Component\HttpFoundation\Request;
@@ -57,7 +59,7 @@ class LoginListenerTest extends TestCase
 
         $handler = $this->createMock(AuthenticationLogHandlerInterface::class);
         $handler->method('isKnown')->willReturn(false);
-        $handler->expects(self::once())->method('handle');
+        $handler->expects(self::once())->method('handle')->willReturn($this->createStub(AbstractAuthenticationLog::class));
 
         $notifier = $this->createMock(NotificationInterface::class);
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -67,7 +69,7 @@ class LoginListenerTest extends TestCase
             new UserInformation('127.0.0.1', 'Test Agent', new \DateTimeImmutable(), null)
         );
 
-        $loginService = new LoginService($fetchUserInformation, $handler, $notifier, $dispatcher);
+        $loginService = new LoginService($fetchUserInformation, $handler, new NewDeviceNotifier($notifier), $dispatcher);
         $listener = new LoginListener($loginService);
 
         $request = new Request([], [], [], [], [], ['REMOTE_ADDR' => '127.0.0.1']);
@@ -89,7 +91,7 @@ class LoginListenerTest extends TestCase
 
         $fetchUserInformation = $this->createStub(FetchUserInformation::class);
 
-        $loginService = new LoginService($fetchUserInformation, $handler, $notifier, $dispatcher);
+        $loginService = new LoginService($fetchUserInformation, $handler, new NewDeviceNotifier($notifier), $dispatcher);
         $listener = new LoginListener($loginService);
 
         $request = new Request();
@@ -112,7 +114,7 @@ class LoginListenerTest extends TestCase
 
         $fetchUserInformation = $this->createStub(FetchUserInformation::class);
 
-        $loginService = new LoginService($fetchUserInformation, $handler, $notifier, $dispatcher);
+        $loginService = new LoginService($fetchUserInformation, $handler, new NewDeviceNotifier($notifier), $dispatcher);
 
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->expects(self::once())

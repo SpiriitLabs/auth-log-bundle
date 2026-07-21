@@ -11,10 +11,10 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\AuthenticationLog;
 
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
 interface AuthenticationLogCreatorInterface
 {
-    public function createLog(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog;
+    public function createLog(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface;
 }

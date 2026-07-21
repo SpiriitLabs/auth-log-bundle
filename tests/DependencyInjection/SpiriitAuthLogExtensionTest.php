@@ -47,4 +47,12 @@ class SpiriitAuthLogExtensionTest extends KernelTestCase
 
         self::bootKernel(['config' => 'empty']);
     }
+
+    public function testItShouldFailWhenTokenTtlIsNotARelativeDateExpression(): void
+    {
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('Invalid confirmation "token_ttl" value "not-a-duration"');
+
+        self::bootKernel(['config' => 'invalid_ttl']);
+    }
 }

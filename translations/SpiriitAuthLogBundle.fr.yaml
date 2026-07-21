@@ -1,2 +1,35 @@
 notification:
     subject: 'Nouvelle activité de connexion sur votre application'
+
+confirmation:
+    email:
+        acknowledge: "C'était moi"
+        disavow: "Ce n'était pas moi"
+    show:
+        acknowledge:
+            title: 'Confirmer cette connexion'
+            message: 'Vous êtes sur le point de confirmer que cette connexion vient bien de vous.'
+            button: "Oui, c'était moi"
+        disavow:
+            title: 'Signaler cette connexion'
+            message: "Vous êtes sur le point de signaler que cette connexion ne vient pas de vous."
+            button: "Non, ce n'était pas moi"
+    result:
+        acknowledged:
+            title: 'Connexion confirmée'
+            message: 'Merci, cette connexion a bien été reconnue comme la vôtre.'
+        disavowed:
+            title: 'Connexion signalée'
+            message: "Merci, nous avons enregistré que cette connexion ne venait pas de vous. Pensez à changer votre mot de passe."
+        already_reviewed:
+            title: 'Déjà traité'
+            message: "Cette connexion a déjà été traitée. Aucune action supplémentaire n'est nécessaire."
+        not_found:
+            title: 'Lien introuvable'
+            message: "Nous n'avons pas trouvé la connexion associée à ce lien. Elle n'est peut-être plus disponible. Si vous avez un doute sur cette connexion, changez votre mot de passe."
+        invalid:
+            title: 'Lien invalide'
+            message: 'Ce lien est invalide. Veuillez utiliser le lien fourni dans votre e-mail.'
+        expired:
+            title: 'Lien expiré'
+            message: 'Ce lien a expiré. Si vous avez un doute sur cette connexion, changez votre mot de passe.'
