@@ -34,20 +34,22 @@ final readonly class ConfirmationUrlGenerator
             throw new ConfirmationNotEnabledException('Cannot generate confirmation links for a log whose confirmation has not been enabled.');
         }
 
+        $expiresAt = (new \DateTimeImmutable('+'.$this->tokenTtl))->getTimestamp();
+
         return new ConfirmationLinks(
-            acknowledgeUrl: $this->signedUrl($token, ConfirmationAction::ACKNOWLEDGE),
-            disavowUrl: $this->signedUrl($token, ConfirmationAction::DISAVOW),
+            acknowledgeUrl: $this->signedUrl($token, $expiresAt, ConfirmationAction::ACKNOWLEDGE),
+            disavowUrl: $this->signedUrl($token, $expiresAt, ConfirmationAction::DISAVOW),
         );
     }
 
-    private function signedUrl(string $token, ConfirmationAction $action): string
+    private function signedUrl(string $token, int $expiresAt, ConfirmationAction $action): string
     {
         $url = $this->urlGenerator->generate(
             $this->routeName,
             [
                 'action' => $action->value,
                 'token' => $token,
-                'expires' => (new \DateTimeImmutable('+'.$this->tokenTtl))->getTimestamp(),
+                'expires' => $expiresAt,
             ],
             UrlGeneratorInterface::ABSOLUTE_URL,
         );

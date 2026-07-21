@@ -106,6 +106,18 @@ final class SpiriitAuthLogBundle extends AbstractBundle
                         ->scalarNode('token_ttl')
                             ->defaultValue('3 days')
                             ->cannotBeEmpty()
+                            ->validate()
+                                ->ifTrue(static function ($tokenTtl): bool {
+                                    try {
+                                        new \DateTimeImmutable('+'.$tokenTtl);
+
+                                        return false;
+                                    } catch (\Throwable) {
+                                        return true;
+                                    }
+                                })
+                                ->thenInvalid('Invalid confirmation "token_ttl" value %s: it must be a relative date expression such as "3 days" or "12 hours".')
+                            ->end()
                             ->info('Lifetime of a confirmation link, as a relative date expression (e.g. "3 days", "12 hours").')
                         ->end()
                         ->scalarNode('route_name')
