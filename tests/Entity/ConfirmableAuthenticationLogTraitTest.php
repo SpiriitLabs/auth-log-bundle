@@ -70,6 +70,17 @@ final class ConfirmableAuthenticationLogTraitTest extends TestCase
         $log->disavow();
     }
 
+    public function testItShouldRejectEnablingConfirmationOnAnAlreadyReviewedLog(): void
+    {
+        $log = $this->createConfirmableLog();
+        $log->enableConfirmation(new ConfirmationToken('the-token'));
+        $log->acknowledge();
+
+        self::expectException(AuthenticationLogAlreadyReviewedException::class);
+
+        $log->enableConfirmation(new ConfirmationToken('another-token'));
+    }
+
     private function createConfirmableLog(): ConfirmableAuthenticationLogInterface&AbstractAuthenticationLog
     {
         $userInformation = new UserInformation('127.0.0.1', 'PHPUnit', new \DateTimeImmutable(), null);

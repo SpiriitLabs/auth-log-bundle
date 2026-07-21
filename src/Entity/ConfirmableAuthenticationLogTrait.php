@@ -29,8 +29,11 @@ trait ConfirmableAuthenticationLogTrait
 
     public function enableConfirmation(ConfirmationToken $confirmationToken): void
     {
+        if (!$this->isPending()) {
+            throw new AuthenticationLogAlreadyReviewedException(\sprintf('Cannot enable confirmation on an authentication log that has already been reviewed as "%s".', $this->status->value));
+        }
+
         $this->confirmationToken = $confirmationToken->toString();
-        $this->status = AuthenticationLogStatus::PENDING;
     }
 
     public function acknowledge(): void
