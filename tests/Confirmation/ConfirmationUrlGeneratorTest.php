@@ -13,6 +13,7 @@ namespace Spiriit\Bundle\Tests\Confirmation;
 
 use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationUrlGenerator;
+use Spiriit\Bundle\AuthLogBundle\Confirmation\Exception\ConfirmationNotEnabledException;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Symfony\Component\HttpFoundation\UriSigner;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -40,5 +41,20 @@ final class ConfirmationUrlGeneratorTest extends TestCase
         self::assertTrue($uriSigner->check($links->disavowUrl));
         self::assertStringContainsString('acknowledge', $links->acknowledgeUrl);
         self::assertStringContainsString('disavow', $links->disavowUrl);
+    }
+
+    public function testItShouldThrowWhenConfirmationIsNotEnabled(): void
+    {
+        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
+        $urlGenerator->expects(self::never())->method('generate');
+
+        $log = $this->createStub(ConfirmableAuthenticationLogInterface::class);
+        $log->method('confirmationToken')->willReturn(null);
+
+        $confirmationUrlGenerator = new ConfirmationUrlGenerator($urlGenerator, new UriSigner('a-secret'), 'spiriit_auth_log_confirm', '3 days');
+
+        $this->expectException(ConfirmationNotEnabledException::class);
+
+        $confirmationUrlGenerator->generate($log);
     }
 }

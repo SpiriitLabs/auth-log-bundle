@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Confirmation;
 
+use Spiriit\Bundle\AuthLogBundle\Confirmation\Exception\ConfirmationNotEnabledException;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Symfony\Component\HttpFoundation\UriSigner;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -27,19 +28,25 @@ final readonly class ConfirmationUrlGenerator
 
     public function generate(ConfirmableAuthenticationLogInterface $authenticationLog): ConfirmationLinks
     {
+        $token = $authenticationLog->confirmationToken();
+
+        if (null === $token) {
+            throw new ConfirmationNotEnabledException('Cannot generate confirmation links for a log whose confirmation has not been enabled.');
+        }
+
         return new ConfirmationLinks(
-            acknowledgeUrl: $this->signedUrl($authenticationLog, ConfirmationAction::ACKNOWLEDGE),
-            disavowUrl: $this->signedUrl($authenticationLog, ConfirmationAction::DISAVOW),
+            acknowledgeUrl: $this->signedUrl($token, ConfirmationAction::ACKNOWLEDGE),
+            disavowUrl: $this->signedUrl($token, ConfirmationAction::DISAVOW),
         );
     }
 
-    private function signedUrl(ConfirmableAuthenticationLogInterface $authenticationLog, ConfirmationAction $action): string
+    private function signedUrl(string $token, ConfirmationAction $action): string
     {
         $url = $this->urlGenerator->generate(
             $this->routeName,
             [
                 'action' => $action->value,
-                'token' => $authenticationLog->confirmationToken(),
+                'token' => $token,
                 'expires' => (new \DateTimeImmutable('+'.$this->tokenTtl))->getTimestamp(),
             ],
             UrlGeneratorInterface::ABSOLUTE_URL,
