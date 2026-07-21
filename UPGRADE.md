@@ -1,8 +1,8 @@
 # Upgrade Guide
 
-## Upgrading from 2.0 to 2.1
+## Upgrading from 2.0 to 3.0
 
-Release 2.1 introduces the optional login-confirmation feature ("It was me / It wasn't me"). As part of it, the bundle's persistence contract no longer references the concrete `AbstractAuthenticationLog` mapped superclass — it now depends on the new `AuthenticationLogInterface`. This decouples the contract from Doctrine inheritance: an integrator can implement a log without extending the mapped superclass.
+Release 3.0 introduces the optional login-confirmation feature ("It was me / It wasn't me"). As part of it, the bundle's persistence contract no longer references the concrete `AbstractAuthenticationLog` mapped superclass — it now depends on the new `AuthenticationLogInterface`. This decouples the contract from Doctrine inheritance: an integrator can implement a log without extending the mapped superclass.
 
 `AbstractAuthenticationLog` implements `AuthenticationLogInterface`, so your log entity needs **no change**. What must change are the signatures of the bundle interfaces you implement — an incompatible signature is a fatal error at class load, so update every interface you have implemented.
 
