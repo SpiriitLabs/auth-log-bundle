@@ -4,3 +4,9 @@
 .phpunit.result.cache
 var
 *.lock
+!yarn.lock
+
+# Documentation site (VitePress)
+/node_modules
+/docs/.vitepress/dist
+/docs/.vitepress/cache
