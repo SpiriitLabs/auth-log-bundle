@@ -16,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationAction;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationToken;
 use Spiriit\Bundle\AuthLogBundle\Controller\AuthenticationLogConfirmationController;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogStatus;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
@@ -25,6 +26,7 @@ use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogConfirmationEvent;
 use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogEvents;
 use Spiriit\Bundle\AuthLogBundle\Repository\ConfirmableAuthenticationLogRepositoryInterface;
+use Spiriit\Bundle\Tests\Stubs\StubUser;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\UriSigner;
@@ -196,7 +198,7 @@ final class AuthenticationLogConfirmationControllerTest extends TestCase
 
     private function pendingLog(): ConfirmableAuthenticationLogInterface&AbstractAuthenticationLog
     {
-        $log = new class(new UserInformation('127.0.0.1', 'PHPUnit', new \DateTimeImmutable(), null)) extends AbstractAuthenticationLog implements ConfirmableAuthenticationLogInterface {
+        $log = new class(new UserIdentity('user-1', StubUser::class), new UserInformation('127.0.0.1', 'PHPUnit', new \DateTimeImmutable(), null)) extends AbstractAuthenticationLog implements ConfirmableAuthenticationLogInterface {
             use ConfirmableAuthenticationLogTrait;
 
             public function getUser(): AuthLogUserInterface

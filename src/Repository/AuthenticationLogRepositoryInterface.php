@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Repository;
 
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
@@ -18,5 +19,5 @@ interface AuthenticationLogRepositoryInterface
 {
     public function save(AuthenticationLogInterface $log): void;
 
-    public function findExistingLog(string $userIdentifier, UserInformation $userInformation): bool;
+    public function findExistingLog(UserIdentity $userIdentity, UserInformation $userInformation): bool;
 }

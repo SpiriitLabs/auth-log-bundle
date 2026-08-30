@@ -12,10 +12,12 @@ declare(strict_types=1);
 namespace Spiriit\Bundle\Tests\Entity;
 
 use PHPUnit\Framework\TestCase;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\LocateUserInformation\LocateValues;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
+use Spiriit\Bundle\Tests\Stubs\StubUser;
 
 final class AbstractAuthenticationLogTest extends TestCase
 {
@@ -30,6 +32,15 @@ final class AbstractAuthenticationLogTest extends TestCase
         self::assertSame('Mozilla/5.0', $log->getUserAgent());
         self::assertSame($loginAt, $log->getLoginAt());
         self::assertNull($log->getLocation());
+    }
+
+    public function testItShouldExposeUserClass(): void
+    {
+        $userInformation = new UserInformation('192.168.1.1', 'Mozilla/5.0', new \DateTimeImmutable(), null);
+
+        $log = $this->createConcreteLog($userInformation);
+
+        self::assertSame(StubUser::class, $log->getUserClass());
     }
 
     public function testConstructorAndGettersWithLocation(): void
@@ -61,7 +72,7 @@ final class AbstractAuthenticationLogTest extends TestCase
 
     private function createConcreteLog(UserInformation $userInformation): AbstractAuthenticationLog
     {
-        return new class($userInformation) extends AbstractAuthenticationLog {
+        return new class(new UserIdentity('user-1', StubUser::class), $userInformation) extends AbstractAuthenticationLog {
             public function getUser(): AuthLogUserInterface
             {
                 throw new \RuntimeException('Stub');

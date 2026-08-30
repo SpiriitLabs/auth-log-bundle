@@ -17,6 +17,8 @@ interface AuthenticationLogInterface
 {
     public function getUser(): AuthLogUserInterface;
 
+    public function getUserClass(): string;
+
     public function getIpAddress(): ?string;
 
     public function getUserAgent(): ?string;

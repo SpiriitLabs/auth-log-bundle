@@ -13,7 +13,9 @@ final class NewDeviceListener
     public function __invoke(AuthenticationLogEvent $event): void
     {
         $userIdentifier = $event->userIdentifier();
+        $userClass = $event->userIdentity()->userClass;
         $userInformation = $event->userInformation();
+        $authenticationLog = $event->authenticationLog();
 
         // your custom logic here
     }

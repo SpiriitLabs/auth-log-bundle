@@ -11,24 +11,37 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Listener;
 
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Symfony\Contracts\EventDispatcher\Event;
 
 class AuthenticationLogEvent extends Event
 {
     public function __construct(
-        private readonly string $userIdentifier,
+        private readonly UserIdentity $userIdentity,
         private readonly UserInformation $userInformation,
+        private readonly AuthenticationLogInterface $authenticationLog,
     ) {
+    }
+
+    public function userIdentity(): UserIdentity
+    {
+        return $this->userIdentity;
     }
 
     public function userIdentifier(): string
     {
-        return $this->userIdentifier;
+        return $this->userIdentity->userIdentifier;
     }
 
     public function userInformation(): UserInformation
     {
         return $this->userInformation;
+    }
+
+    public function authenticationLog(): AuthenticationLogInterface
+    {
+        return $this->authenticationLog;
     }
 }

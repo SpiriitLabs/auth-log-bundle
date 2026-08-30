@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Spiriit\Bundle\AuthLogBundle\Listener;
 
 use Spiriit\Bundle\AuthLogBundle\DTO\LoginParameterDto;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
 use Spiriit\Bundle\AuthLogBundle\Messenger\AuthLoginMessage\AuthLoginMessage;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
@@ -39,7 +40,7 @@ final class LoginListener
         $request = $event->getRequest();
 
         $dto = new LoginParameterDto(
-            userIdentifier: $user->getUserIdentifier(),
+            userIdentity: UserIdentity::fromUser($user),
             toEmail: $user->getAuthLogEmail(),
             toEmailName: $user->getAuthLogDisplayName(),
             clientIp: $request->getClientIp() ?? '',

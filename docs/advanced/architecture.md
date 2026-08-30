@@ -3,12 +3,12 @@
 Internal flow when a user logs in:
 
 1. `LoginListener` catches Symfony's `LoginSuccessEvent`
-2. Builds a `LoginParameterDto` from the request (IP, user agent, user identifier)
+2. Builds a `LoginParameterDto` from the request (IP, user agent) and the user (`UserIdentity`: identifier + class)
 3. Dispatches to `LoginService` (sync) or `AuthLoginMessage` (async via Messenger)
 4. `LoginService` fetches geolocation data via `FetchUserInformation`
-5. `DoctrineAuthenticationLogHandler` checks if the context is known (`findExistingLog`), and if not, creates and saves the log (`createLog` + `save`)
-6. Dispatches `AuthenticationLogEvents::NEW_DEVICE` event
-7. Sends notification via `NotificationInterface`
+5. `DoctrineAuthenticationLogHandler` checks if the context is known for that identity (`findExistingLog`), and if not, creates and saves the log (`createLog` + `save`)
+6. Dispatches `AuthenticationLogEvents::NEW_DEVICE` with the persisted log
+7. Sends a `NewDeviceNotification` (user reference, user information, log, confirmation links) via `NotificationInterface`
 
 ## Extension points
 

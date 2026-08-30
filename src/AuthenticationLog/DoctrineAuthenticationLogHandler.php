@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Spiriit\Bundle\AuthLogBundle\AuthenticationLog;
 
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationTokenGenerator;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
@@ -26,14 +27,14 @@ final readonly class DoctrineAuthenticationLogHandler implements AuthenticationL
     ) {
     }
 
-    public function isKnown(string $userIdentifier, UserInformation $userInformation): bool
+    public function isKnown(UserIdentity $userIdentity, UserInformation $userInformation): bool
     {
-        return $this->repository->findExistingLog($userIdentifier, $userInformation);
+        return $this->repository->findExistingLog($userIdentity, $userInformation);
     }
 
-    public function handle(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
+    public function handle(UserIdentity $userIdentity, UserInformation $userInformation): AuthenticationLogInterface
     {
-        $log = $this->creator->createLog($userIdentifier, $userInformation);
+        $log = $this->creator->createLog($userIdentity, $userInformation);
 
         if (null !== $this->confirmationTokenGenerator && $log instanceof ConfirmableAuthenticationLogInterface) {
             $log->enableConfirmation($this->confirmationTokenGenerator->generate());

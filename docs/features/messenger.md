@@ -16,6 +16,10 @@ framework:
             'Spiriit\Bundle\AuthLogBundle\Messenger\AuthLoginMessage\AuthLoginMessage': async
 ```
 
+::: warning Upgrading to 3.0
+The payload of `AuthLoginMessage` changed: it now carries a `UserIdentity` object instead of a plain identifier. Messages queued by 2.x are rejected by 3.0 code, so drain the queue before deploying — see the [upgrade guide](/upgrade/3.0).
+:::
+
 ::: tip Absolute URLs from a worker
 A Messenger worker has no request context, so generating absolute URLs (used by the [login confirmation](/features/login-confirmation) links) requires a default URI:
 

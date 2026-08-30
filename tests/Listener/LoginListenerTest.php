@@ -13,8 +13,8 @@ namespace Spiriit\Bundle\Tests\Listener;
 
 use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogHandlerInterface;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
-use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformation;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Listener\LoginListener;
@@ -22,6 +22,7 @@ use Spiriit\Bundle\AuthLogBundle\Messenger\AuthLoginMessage\AuthLoginMessage;
 use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotifier;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
+use Spiriit\Bundle\Tests\Stubs\StubUser;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -52,13 +53,17 @@ class LoginListenerTest extends TestCase
 
     public function testItShouldCallLoginServiceWhenUserImplementsAuthLogUserInterface(): void
     {
-        $user = $this->createMock(AuthLogUserInterface::class);
-        $user->method('getUserIdentifier')->willReturn('user@test.com');
-        $user->method('getAuthLogEmail')->willReturn('user@test.com');
-        $user->method('getAuthLogDisplayName')->willReturn('Test User');
+        $user = new StubUser('user@test.com');
 
         $handler = $this->createMock(AuthenticationLogHandlerInterface::class);
-        $handler->method('isKnown')->willReturn(false);
+        $handler->expects(self::once())
+            ->method('isKnown')
+            ->with(
+                self::callback(static fn (UserIdentity $userIdentity): bool => 'user@test.com' === $userIdentity->userIdentifier
+                    && StubUser::class === $userIdentity->userClass),
+                self::anything(),
+            )
+            ->willReturn(false);
         $handler->expects(self::once())->method('handle')->willReturn($this->createStub(AbstractAuthenticationLog::class));
 
         $notifier = $this->createMock(NotificationInterface::class);
@@ -101,10 +106,7 @@ class LoginListenerTest extends TestCase
 
     public function testItShouldDispatchMessageWhenMessengerIsConfigured(): void
     {
-        $user = $this->createMock(AuthLogUserInterface::class);
-        $user->method('getUserIdentifier')->willReturn('user@test.com');
-        $user->method('getAuthLogEmail')->willReturn('user@test.com');
-        $user->method('getAuthLogDisplayName')->willReturn('Test User');
+        $user = new StubUser('user@test.com');
 
         $handler = $this->createMock(AuthenticationLogHandlerInterface::class);
         $handler->expects(self::never())->method('handle');
@@ -119,7 +121,11 @@ class LoginListenerTest extends TestCase
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->expects(self::once())
             ->method('dispatch')
-            ->with(self::isInstanceOf(AuthLoginMessage::class))
+            ->with(self::callback(static function (AuthLoginMessage $message): bool {
+                $userIdentity = $message->loginParameterDto->userIdentity;
+
+                return 'user@test.com' === $userIdentity->userIdentifier && StubUser::class === $userIdentity->userClass;
+            }))
             ->willReturn(new Envelope(new \stdClass()));
 
         $listener = new LoginListener($loginService, $messageBus);

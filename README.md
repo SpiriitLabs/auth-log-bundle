@@ -81,11 +81,13 @@ Extend `AbstractAuthenticationLog` and add a relation to your User entity:
 
 ```php
 use Doctrine\ORM\Mapping as ORM;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
 #[ORM\Entity(repositoryClass: UserAuthLogRepository::class)]
+#[ORM\Index(columns: ['user_id', 'user_class', 'ip_address'])]
 class UserAuthLog extends AbstractAuthenticationLog
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
@@ -94,10 +96,10 @@ class UserAuthLog extends AbstractAuthenticationLog
     #[ORM\ManyToOne(targetEntity: User::class)]
     private User $user;
 
-    public function __construct(User $user, UserInformation $userInformation)
+    public function __construct(User $user, UserIdentity $userIdentity, UserInformation $userInformation)
     {
         $this->user = $user;
-        parent::__construct($userInformation);
+        parent::__construct($userIdentity, $userInformation);
     }
 
     public function getUser(): AuthLogUserInterface
@@ -107,16 +109,21 @@ class UserAuthLog extends AbstractAuthenticationLog
 }
 ```
 
+> **Several user classes?** The example above relates the log to a single `User` entity, so it can only store logs for that class. If several firewalls with distinct user classes share one log table, declare one nullable relation per class and have `getUser()` return whichever is set (`getUser()` must always return an `AuthLogUserInterface`). The `user_class` column then tells them apart in `findExistingLog()` — that is what it is for. Keeping one log table per user class works too, and is simpler.
+
 ### 5. Create the repository
 
 Your repository must implement two interfaces:
 
 - `AuthenticationLogRepositoryInterface` — check if a log already exists and save new logs
-- `AuthenticationLogCreatorInterface` — build the log entity from a user identifier and user information
+- `AuthenticationLogCreatorInterface` — build the log entity from a user identity and user information
+
+A `UserIdentity` carries both the user identifier and the user class (FQCN). Keep the class in the lookup: two accounts of different classes may share the same identifier.
 
 ```php
 use Doctrine\ORM\EntityRepository;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogCreatorInterface;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Repository\AuthenticationLogRepositoryInterface;
@@ -131,21 +138,37 @@ class UserAuthLogRepository extends EntityRepository implements
         $this->getEntityManager()->flush();
     }
 
-    public function findExistingLog(string $userIdentifier, UserInformation $userInformation): bool
+    public function findExistingLog(UserIdentity $userIdentity, UserInformation $userInformation): bool
     {
+        $user = $this->findUser($userIdentity);
+
+        if (null === $user) {
+            return false;
+        }
+
         return null !== $this->findOneBy([
-            'user' => $userIdentifier,
+            'user' => $user,
+            'userClass' => $userIdentity->userClass,
             'ipAddress' => $userInformation->ipAddress,
         ]);
     }
 
-    public function createLog(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
+    public function createLog(UserIdentity $userIdentity, UserInformation $userInformation): AuthenticationLogInterface
     {
-        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy([
-            'email' => $userIdentifier,
-        ]);
+        $user = $this->findUser($userIdentity);
 
-        return new UserAuthLog($user, $userInformation);
+        if (null === $user) {
+            throw new \RuntimeException(sprintf('No user found for identifier "%s".', $userIdentity->userIdentifier));
+        }
+
+        return new UserAuthLog($user, $userIdentity, $userInformation);
+    }
+
+    private function findUser(UserIdentity $userIdentity): ?User
+    {
+        return $this->getEntityManager()->getRepository(User::class)->findOneBy([
+            'email' => $userIdentity->userIdentifier,
+        ]);
     }
 }
 ```
@@ -186,6 +209,8 @@ framework:
             'Spiriit\Bundle\AuthLogBundle\Messenger\AuthLoginMessage\AuthLoginMessage': async
 ```
 
+> **Upgrading to 3.0?** The payload of `AuthLoginMessage` changed. Drain the queue before deploying, otherwise the messages still in flight are rejected — see [UPGRADE.md](UPGRADE.md).
+
 ## Events
 
 When a new device/context is detected, the bundle dispatches a `AuthenticationLogEvents::NEW_DEVICE` event. You can listen to it for custom processing (logging, analytics, etc.):
@@ -201,7 +226,9 @@ final class NewDeviceListener
     public function __invoke(AuthenticationLogEvent $event): void
     {
         $userIdentifier = $event->userIdentifier();
+        $userClass = $event->userIdentity()->userClass;
         $userInformation = $event->userInformation();
+        $authenticationLog = $event->authenticationLog();
 
         // your custom logic here
     }
@@ -340,17 +367,17 @@ You can override the confirmation pages the same way as the email template, unde
 By default, the bundle sends email alerts via Symfony Mailer. To use a different transport (Slack, SMS, etc.), implement `NotificationInterface` and register it as a service:
 
 ```php
-use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationLinks;
-use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
-use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
+use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotification;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 
 final class SlackNotification implements NotificationInterface
 {
-    public function send(UserInformation $userInformation, UserReference $userReference, ?ConfirmationLinks $confirmationLinks = null): void
+    public function send(NewDeviceNotification $notification): void
     {
-        // send a Slack message, SMS, etc.
-        // $confirmationLinks is null unless the confirmation feature is enabled
+        $notification->userReference;      // email, display name, user identity
+        $notification->userInformation;    // IP, user agent, location
+        $notification->authenticationLog;  // the log that was just persisted
+        $notification->confirmationLinks;  // null unless the confirmation feature is enabled
     }
 }
 ```
@@ -385,21 +412,25 @@ Available variables in the template:
 | `userInformation.userAgent` | `?string` | Browser / device user agent |
 | `userInformation.loginAt` | `?DateTimeImmutable` | Login timestamp |
 | `userInformation.location` | `?LocateValues` | Geolocation (city, country, latitude, longitude) |
-| `authenticableLog.displayName` | `string` | User display name |
-| `authenticableLog.email` | `string` | User email |
+| `userReference.displayName` | `string` | User display name |
+| `userReference.email` | `string` | User email |
+| `userReference.userIdentity.userIdentifier` | `string` | User identifier |
+| `userReference.userIdentity.userClass` | `string` | User class (FQCN) |
+| `authenticationLog` | `AuthenticationLogInterface` | The persisted log (`getUser()`, `getLoginAt()`, `getUserClass()`…) |
 | `confirmationLinks` | `?ConfirmationLinks` | `acknowledgeUrl` / `disavowUrl` — only set when the confirmation feature is enabled |
+| `authenticableLog` | `UserReference` | **Deprecated** alias of `userReference`, removed in 4.0 |
 
 ## Architecture
 
 Internal flow when a user logs in:
 
 1. `LoginListener` catches Symfony's `LoginSuccessEvent`
-2. Builds a `LoginParameterDto` from the request (IP, user agent, user identifier)
+2. Builds a `LoginParameterDto` from the request (IP, user agent) and the user (`UserIdentity`: identifier + class)
 3. Dispatches to `LoginService` (sync) or `AuthLoginMessage` (async via Messenger)
 4. `LoginService` fetches geolocation data via `FetchUserInformation`
-5. `DoctrineAuthenticationLogHandler` checks if the context is known (`findExistingLog`), and if not, creates and saves the log (`createLog` + `save`)
-6. Dispatches `AuthenticationLogEvents::NEW_DEVICE` event
-7. Sends notification via `NotificationInterface`
+5. `DoctrineAuthenticationLogHandler` checks if the context is known for that identity (`findExistingLog`), and if not, creates and saves the log (`createLog` + `save`)
+6. Dispatches `AuthenticationLogEvents::NEW_DEVICE` with the persisted log
+7. Sends a `NewDeviceNotification` (user reference, user information, log, confirmation links) via `NotificationInterface`
 
 ## Testing
 

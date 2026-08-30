@@ -18,6 +18,10 @@ templates/bundles/SpiriitAuthLogBundle/new_device.html.twig
 | `userInformation.userAgent` | `?string` | Browser / device user agent |
 | `userInformation.loginAt` | `?DateTimeImmutable` | Login timestamp |
 | `userInformation.location` | `?LocateValues` | Geolocation (city, country, latitude, longitude) |
-| `authenticableLog.displayName` | `string` | User display name |
-| `authenticableLog.email` | `string` | User email |
+| `userReference.displayName` | `string` | User display name |
+| `userReference.email` | `string` | User email |
+| `userReference.userIdentity.userIdentifier` | `string` | User identifier |
+| `userReference.userIdentity.userClass` | `string` | User class (FQCN) |
+| `authenticationLog` | `AuthenticationLogInterface` | The persisted log (`getUser()`, `getLoginAt()`, `getUserClass()`…) |
 | `confirmationLinks` | `?ConfirmationLinks` | `acknowledgeUrl` / `disavowUrl` — only set when the [confirmation feature](/features/login-confirmation) is enabled |
+| `authenticableLog` | `UserReference` | **Deprecated** alias of `userReference`, removed in 4.0 |

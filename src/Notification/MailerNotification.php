@@ -11,9 +11,6 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Notification;
 
-use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationLinks;
-use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
-use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -31,8 +28,10 @@ final readonly class MailerNotification implements NotificationInterface
     ) {
     }
 
-    public function send(UserInformation $userInformation, UserReference $userReference, ?ConfirmationLinks $confirmationLinks = null): void
+    public function send(NewDeviceNotification $notification): void
     {
+        $userReference = $notification->userReference;
+
         $templateEmail = (new TemplatedEmail())
             ->to(new Address(
                 address: $userReference->email,
@@ -43,9 +42,12 @@ final readonly class MailerNotification implements NotificationInterface
             ->htmlTemplate('@SpiriitAuthLog/new_device.html.twig')
             ->context(
                 [
-                    'userInformation' => $userInformation,
+                    'userInformation' => $notification->userInformation,
+                    'userReference' => $userReference,
+                    // Deprecated alias for "userReference", kept for overridden templates.
                     'authenticableLog' => $userReference,
-                    'confirmationLinks' => $confirmationLinks,
+                    'authenticationLog' => $notification->authenticationLog,
+                    'confirmationLinks' => $notification->confirmationLinks,
                 ],
             );
 

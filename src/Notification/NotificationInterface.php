@@ -11,11 +11,7 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Notification;
 
-use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationLinks;
-use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
-use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
-
 interface NotificationInterface
 {
-    public function send(UserInformation $userInformation, UserReference $userReference, ?ConfirmationLinks $confirmationLinks = null): void;
+    public function send(NewDeviceNotification $notification): void;
 }

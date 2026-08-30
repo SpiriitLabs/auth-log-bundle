@@ -11,12 +11,13 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\AuthenticationLog;
 
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
 interface AuthenticationLogHandlerInterface
 {
-    public function isKnown(string $userIdentifier, UserInformation $userInformation): bool;
+    public function isKnown(UserIdentity $userIdentity, UserInformation $userInformation): bool;
 
-    public function handle(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface;
+    public function handle(UserIdentity $userIdentity, UserInformation $userInformation): AuthenticationLogInterface;
 }

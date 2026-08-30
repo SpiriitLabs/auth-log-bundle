@@ -10,12 +10,12 @@
 namespace Spiriit\Bundle\Tests\Integration\Stubs;
 
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogCreatorInterface;
-use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationLinks;
-use Spiriit\Bundle\AuthLogBundle\DTO\UserReference;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
+use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotification;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\AuthenticationLogRepositoryInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\ConfirmableAuthenticationLogRepositoryInterface;
@@ -55,7 +55,7 @@ class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInte
     {
     }
 
-    public function findExistingLog(string $userIdentifier, UserInformation $userInformation): bool
+    public function findExistingLog(UserIdentity $userIdentity, UserInformation $userInformation): bool
     {
         return false;
     }
@@ -71,9 +71,9 @@ class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInte
  */
 class StubAuthenticationLogCreator implements AuthenticationLogCreatorInterface
 {
-    public function createLog(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
+    public function createLog(UserIdentity $userIdentity, UserInformation $userInformation): AuthenticationLogInterface
     {
-        return new class($userInformation) extends AbstractAuthenticationLog {
+        return new class($userIdentity, $userInformation) extends AbstractAuthenticationLog {
             public function getUser(): \Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface
             {
                 throw new \RuntimeException('Stub');
@@ -87,7 +87,7 @@ class StubAuthenticationLogCreator implements AuthenticationLogCreatorInterface
  */
 class StubNotification implements NotificationInterface
 {
-    public function send(UserInformation $userInformation, UserReference $userReference, ?ConfirmationLinks $confirmationLinks = null): void
+    public function send(NewDeviceNotification $notification): void
     {
     }
 }

@@ -1,0 +1,162 @@
+/* Brand colours derived from the Spiriit identity: #3960ff, with the
+   starburst accents (yellow, coral, green, purple) used by the artwork. */
+:root {
+  --vp-c-brand-1: #3960ff;
+  --vp-c-brand-2: #2f52e0;
+  --vp-c-brand-3: #3960ff;
+  --vp-c-brand-soft: rgba(57, 96, 255, 0.13);
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #3960ff 30%, #8b5cf6);
+
+  /* the hero artwork carries its own surface, so no coloured halo behind it */
+  --vp-home-hero-image-background-image: none;
+  --vp-home-hero-image-filter: none;
+}
+
+.dark {
+  --vp-c-brand-1: #93a9ff;
+  --vp-c-brand-2: #6b86ff;
+  --vp-c-brand-3: #3960ff;
+  --vp-c-brand-soft: rgba(107, 134, 255, 0.16);
+
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #6b86ff 30%, #a78bfa);
+}
+
+.VPHero .VPImage {
+  max-width: 420px;
+}
+
+/* VitePress 2 renders each feature as .VPFeatures .item > .box; there is no
+   .VPFeature class on the item itself. */
+.VPFeatures .item .box .icon {
+  background-color: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+}
+
+.VPFeatures .item .box .icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.VPHome .vp-doc.container {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px 96px;
+}
+
+.home-extra h2 {
+  letter-spacing: -0.02em;
+}
+
+/* Hero eyebrow: puts the OWASP rationale above the fold, linking to /owasp */
+.owasp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 5px 14px 5px 5px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background-color: var(--vp-c-bg-soft);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--vp-c-text-2);
+  transition: border-color 0.25s, color 0.25s;
+}
+
+.owasp-badge:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-text-1);
+}
+
+.owasp-badge-tag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background-color: var(--vp-c-brand-3);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .owasp-badge {
+    font-size: 12px;
+  }
+}
+
+/* Full-width OWASP statement between the hero and the features */
+.owasp-band {
+  margin: 40px 0 8px;
+  padding: 56px 24px;
+  background:
+    radial-gradient(60% 120% at 50% 0%, var(--vp-c-brand-soft) 0%, transparent 70%),
+    var(--vp-c-bg-soft);
+  border-top: 1px solid var(--vp-c-divider);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.owasp-band-inner {
+  max-width: 840px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.owasp-band-kicker {
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vp-c-brand-1);
+}
+
+.owasp-band-quote {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: var(--vp-c-text-1);
+}
+
+.owasp-band-text {
+  margin: 20px auto 0;
+  max-width: 640px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--vp-c-text-2);
+}
+
+.owasp-band-cta {
+  display: inline-block;
+  margin-top: 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--vp-c-brand-1);
+  transition: color 0.25s;
+}
+
+.owasp-band-cta:hover {
+  color: var(--vp-c-brand-2);
+}
+
+@media (max-width: 640px) {
+  .owasp-band {
+    padding: 40px 24px;
+  }
+
+  .owasp-band-quote {
+    font-size: 21px;
+  }
+}
+
+.home-credit {
+  margin-top: 48px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--vp-c-text-2);
+}

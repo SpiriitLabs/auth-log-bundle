@@ -12,7 +12,7 @@ namespace Spiriit\Bundle\AuthLogBundle\DTO;
 final readonly class LoginParameterDto
 {
     public function __construct(
-        public string $userIdentifier,
+        public UserIdentity $userIdentity,
         public string $toEmail,
         public string $toEmailName,
         public string $clientIp,

@@ -28,7 +28,12 @@ final readonly class NewDeviceNotifier
 
     public function notify(UserInformation $userInformation, UserReference $userReference, AuthenticationLogInterface $authenticationLog): void
     {
-        $this->notification->send($userInformation, $userReference, $this->confirmationLinks($authenticationLog));
+        $this->notification->send(new NewDeviceNotification(
+            userReference: $userReference,
+            userInformation: $userInformation,
+            authenticationLog: $authenticationLog,
+            confirmationLinks: $this->confirmationLinks($authenticationLog),
+        ));
     }
 
     private function confirmationLinks(AuthenticationLogInterface $authenticationLog): ?ConfirmationLinks

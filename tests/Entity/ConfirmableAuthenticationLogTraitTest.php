@@ -14,12 +14,14 @@ namespace Spiriit\Bundle\Tests\Entity;
 use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationToken;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\Exception\AuthenticationLogAlreadyReviewedException;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogStatus;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogTrait;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
+use Spiriit\Bundle\Tests\Stubs\StubUser;
 
 final class ConfirmableAuthenticationLogTraitTest extends TestCase
 {
@@ -85,7 +87,7 @@ final class ConfirmableAuthenticationLogTraitTest extends TestCase
     {
         $userInformation = new UserInformation('127.0.0.1', 'PHPUnit', new \DateTimeImmutable(), null);
 
-        return new class($userInformation) extends AbstractAuthenticationLog implements ConfirmableAuthenticationLogInterface {
+        return new class(new UserIdentity('user-1', StubUser::class), $userInformation) extends AbstractAuthenticationLog implements ConfirmableAuthenticationLogInterface {
             use ConfirmableAuthenticationLogTrait;
 
             public function getUser(): AuthLogUserInterface

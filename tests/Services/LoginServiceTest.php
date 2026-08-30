@@ -14,12 +14,17 @@ namespace Spiriit\Bundle\Tests\Services;
 use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogHandlerInterface;
 use Spiriit\Bundle\AuthLogBundle\DTO\LoginParameterDto;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformation;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
+use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogEvent;
+use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogEvents;
+use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotification;
 use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotifier;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
+use Spiriit\Bundle\Tests\Stubs\StubUser;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class LoginServiceTest extends TestCase
@@ -28,7 +33,7 @@ class LoginServiceTest extends TestCase
     {
         // Arrange
         $dto = new LoginParameterDto(
-            userIdentifier: '1',
+            userIdentity: new UserIdentity('1', StubUser::class),
             toEmail: 'email@test.fr',
             toEmailName: 'test',
             clientIp: '127.0.0.1',
@@ -59,7 +64,7 @@ class LoginServiceTest extends TestCase
     {
         // Arrange
         $dto = new LoginParameterDto(
-            userIdentifier: '1',
+            userIdentity: new UserIdentity('1', StubUser::class),
             toEmail: 'email@test.fr',
             toEmailName: 'test',
             clientIp: '127.0.0.1',
@@ -77,10 +82,22 @@ class LoginServiceTest extends TestCase
         $notification = $this->createMock(NotificationInterface::class);
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
 
+        $log = $this->createStub(AbstractAuthenticationLog::class);
+
         // Act
-        $handler->expects(self::once())->method('handle')->willReturn($this->createStub(AbstractAuthenticationLog::class));
-        $notification->expects(self::once())->method('send');
-        $dispatcher->expects(self::once())->method('dispatch');
+        $handler->expects(self::once())->method('handle')->willReturn($log);
+        $notification->expects(self::once())
+            ->method('send')
+            ->with(self::callback(static fn (NewDeviceNotification $sent): bool => $sent->authenticationLog === $log
+                && $sent->userReference->userIdentity === $dto->userIdentity));
+        $dispatcher->expects(self::once())
+            ->method('dispatch')
+            ->with(
+                self::callback(static fn (AuthenticationLogEvent $event): bool => $event->authenticationLog() === $log
+                    && $event->userIdentity() === $dto->userIdentity),
+                AuthenticationLogEvents::NEW_DEVICE,
+            )
+            ->willReturnArgument(0);
 
         $service = new LoginService($fetchUserInformation, $handler, new NewDeviceNotifier($notification), $dispatcher);
         $service->execute($dto);

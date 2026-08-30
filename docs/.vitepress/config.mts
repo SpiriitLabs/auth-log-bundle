@@ -11,8 +11,10 @@ export default defineConfig({
     ['link', { rel: 'icon', href: '/auth-log-bundle/favicon.svg', type: 'image/svg+xml' }],
   ],
   themeConfig: {
+    logo: '/logo.svg',
     nav: [
       { text: 'Guide', link: '/guide/installation' },
+      { text: 'Security', link: '/owasp' },
       { text: 'Features', link: '/features/geolocation' },
       { text: 'Advanced', link: '/advanced/custom-notification' },
       { text: 'Upgrade', link: '/upgrade/3.0' },
@@ -29,7 +31,7 @@ export default defineConfig({
         text: 'Introduction',
         items: [
           { text: 'What is Auth Log Bundle?', link: '/introduction' },
-          { text: 'OWASP best practices', link: '/owasp' },
+          { text: 'Security & OWASP', link: '/owasp' },
         ],
       },
       {
@@ -79,7 +81,7 @@ export default defineConfig({
       provider: 'local',
     },
     footer: {
-      message: 'Released under the MIT License.',
+      message: 'Built and maintained by <a href="https://www.spiriit.com" target="_blank" rel="noreferrer">Spiriit</a> — released under the MIT License.',
       copyright: 'Copyright © Spiriit',
     },
   },

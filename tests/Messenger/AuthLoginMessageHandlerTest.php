@@ -14,6 +14,7 @@ namespace Spiriit\Bundle\Tests\Messenger;
 use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogHandlerInterface;
 use Spiriit\Bundle\AuthLogBundle\DTO\LoginParameterDto;
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformation;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
@@ -22,6 +23,7 @@ use Spiriit\Bundle\AuthLogBundle\Messenger\AuthLoginMessage\AuthLoginMessageHand
 use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotifier;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
+use Spiriit\Bundle\Tests\Stubs\StubUser;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class AuthLoginMessageHandlerTest extends TestCase
@@ -29,7 +31,7 @@ final class AuthLoginMessageHandlerTest extends TestCase
     public function testInvokeDelegatesToLoginService(): void
     {
         $dto = new LoginParameterDto(
-            userIdentifier: 'user-1',
+            userIdentity: new UserIdentity('user-1', StubUser::class),
             toEmail: 'user@test.com',
             toEmailName: 'Test User',
             clientIp: '127.0.0.1',

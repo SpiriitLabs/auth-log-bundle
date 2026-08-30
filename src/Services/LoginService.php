@@ -34,19 +34,19 @@ final class LoginService
     {
         $userInformation = $this->fetchUserInformation->fetch($dto->clientIp, $dto->userAgent);
 
-        if ($this->handler->isKnown($dto->userIdentifier, $userInformation)) {
+        if ($this->handler->isKnown($dto->userIdentity, $userInformation)) {
             return;
         }
 
-        $log = $this->handler->handle($dto->userIdentifier, $userInformation);
+        $log = $this->handler->handle($dto->userIdentity, $userInformation);
 
         $this->dispatcher->dispatch(
-            new AuthenticationLogEvent($dto->userIdentifier, $userInformation),
+            new AuthenticationLogEvent($dto->userIdentity, $userInformation, $log),
             AuthenticationLogEvents::NEW_DEVICE
         );
 
         $userReference = new UserReference(
-            userIdentifier: $dto->userIdentifier,
+            userIdentity: $dto->userIdentity,
             email: $dto->toEmail,
             displayName: $dto->toEmailName,
         );

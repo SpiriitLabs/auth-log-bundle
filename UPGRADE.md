@@ -4,11 +4,57 @@
 
 Release 3.0 introduces the optional login-confirmation feature ("It was me / It wasn't me"). As part of it, the bundle's persistence contract no longer references the concrete `AbstractAuthenticationLog` mapped superclass — it now depends on the new `AuthenticationLogInterface`. This decouples the contract from Doctrine inheritance: an integrator can implement a log without extending the mapped superclass.
 
-`AbstractAuthenticationLog` implements `AuthenticationLogInterface`, so your log entity needs **no change**. What must change are the signatures of the bundle interfaces you implement — an incompatible signature is a fatal error at class load, so update every interface you have implemented.
+3.0 also introduces `UserIdentity`, which carries the user identifier **and** the user class (FQCN). In a multi-firewall application, two accounts of different classes can share the same identifier; until now the bundle keyed everything on the identifier alone, so one account's log silenced the other's notification, and `createLog()` — which only received the identifier — could attach the log to the wrong account. The user class is now part of the uniqueness key and is persisted on the log.
 
-### 1. Repository: widen `save()` and `createLog()` (required)
+Last, the persisted log is now handed to the `NEW_DEVICE` event and to the notification, so a consumer no longer has to query it back.
 
-`AuthenticationLogRepositoryInterface::save()` and `AuthenticationLogCreatorInterface::createLog()` now type-hint `AuthenticationLogInterface`. A parameter type cannot be narrowed in an implementation, so keeping `AbstractAuthenticationLog` triggers a fatal error — update the signatures.
+### 1. Log entity: constructor and `user_class` column (required)
+
+`AbstractAuthenticationLog` now takes the `UserIdentity` as its first constructor argument and persists its `userClass` in a new `user_class` column.
+
+**Before:**
+
+```php
+public function __construct(User $user, UserInformation $userInformation)
+{
+    $this->user = $user;
+    parent::__construct($userInformation);
+}
+```
+
+**After:**
+
+```php
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
+
+public function __construct(User $user, UserIdentity $userIdentity, UserInformation $userInformation)
+{
+    $this->user = $user;
+    parent::__construct($userIdentity, $userInformation);
+}
+```
+
+If your log implements `AuthenticationLogInterface` **without** extending the mapped superclass, implement the new `getUserClass(): string` method yourself.
+
+**Database migration.** `doctrine:migrations:diff` generates `ADD user_class VARCHAR(255) NOT NULL`, which fails on PostgreSQL when the table already holds rows (MySQL silently fills `''`). Backfill in three steps instead:
+
+```sql
+ALTER TABLE user_auth_log ADD user_class VARCHAR(255) DEFAULT '' NOT NULL;
+UPDATE user_auth_log SET user_class = 'App\Entity\User';
+ALTER TABLE user_auth_log ALTER user_class DROP DEFAULT;
+```
+
+Inside a PHP migration the backslashes must be escaped: `$this->addSql("UPDATE user_auth_log SET user_class = 'App\\\\Entity\\\\User'");`. Use one `UPDATE` per user class if a single table stores logs for several of them. The column stays `NOT NULL`: it belongs to the uniqueness key, and a nullable value would weaken it. Since that key is now `(user, user_class, ip_address)`, declare the matching index on your entity — a mapped superclass cannot do it for you:
+
+```php
+#[ORM\Entity(repositoryClass: UserAuthLogRepository::class)]
+#[ORM\Index(columns: ['user_id', 'user_class', 'ip_address'])]
+class UserAuthLog extends AbstractAuthenticationLog
+```
+
+### 2. Repository and creator: `UserIdentity` and `AuthenticationLogInterface` (required)
+
+`AuthenticationLogRepositoryInterface::save()` and `AuthenticationLogCreatorInterface::createLog()` now type-hint `AuthenticationLogInterface`, and both `findExistingLog()` and `createLog()` receive a `UserIdentity` instead of a string identifier. A parameter type cannot be narrowed in an implementation, so an outdated signature is a fatal error at class load.
 
 **Before:**
 
@@ -25,9 +71,21 @@ class UserAuthLogRepository extends EntityRepository implements
         $this->getEntityManager()->flush();
     }
 
+    public function findExistingLog(string $userIdentifier, UserInformation $userInformation): bool
+    {
+        return null !== $this->findOneBy([
+            'user' => $userIdentifier,
+            'ipAddress' => $userInformation->ipAddress,
+        ]);
+    }
+
     public function createLog(string $userIdentifier, UserInformation $userInformation): AbstractAuthenticationLog
     {
-        return new UserAuthLog($userIdentifier, $userInformation);
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy([
+            'email' => $userIdentifier,
+        ]);
+
+        return new UserAuthLog($user, $userInformation);
     }
 }
 ```
@@ -35,6 +93,7 @@ class UserAuthLogRepository extends EntityRepository implements
 **After:**
 
 ```php
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
 
 class UserAuthLogRepository extends EntityRepository implements
@@ -47,16 +106,46 @@ class UserAuthLogRepository extends EntityRepository implements
         $this->getEntityManager()->flush();
     }
 
-    public function createLog(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
+    public function findExistingLog(UserIdentity $userIdentity, UserInformation $userInformation): bool
     {
-        return new UserAuthLog($userIdentifier, $userInformation);
+        $user = $this->findUser($userIdentity);
+
+        if (null === $user) {
+            return false;
+        }
+
+        return null !== $this->findOneBy([
+            'user' => $user,
+            'userClass' => $userIdentity->userClass,
+            'ipAddress' => $userInformation->ipAddress,
+        ]);
+    }
+
+    public function createLog(UserIdentity $userIdentity, UserInformation $userInformation): AuthenticationLogInterface
+    {
+        $user = $this->findUser($userIdentity);
+
+        if (null === $user) {
+            throw new \RuntimeException(sprintf('No user found for identifier "%s".', $userIdentity->userIdentifier));
+        }
+
+        return new UserAuthLog($user, $userIdentity, $userInformation);
+    }
+
+    private function findUser(UserIdentity $userIdentity): ?User
+    {
+        return $this->getEntityManager()->getRepository(User::class)->findOneBy([
+            'email' => $userIdentity->userIdentifier,
+        ]);
     }
 }
 ```
 
-### 2. Custom notification: accept the confirmation links parameter
+> **Note:** the 2.x example passed the identifier string as the `user` criterion, which compared a relation to an email. Load the user first, as above.
 
-If you implemented `NotificationInterface` for a custom transport (Slack, SMS…), `send()` now takes a third optional argument, `?ConfirmationLinks $confirmationLinks = null`. It carries the "It was me / It wasn't me" links when the confirmation feature is enabled, and is `null` otherwise. Omitting it is a fatal signature error.
+### 3. Custom notification: `send()` now takes a `NewDeviceNotification`
+
+If you implemented `NotificationInterface` for a custom transport (Slack, SMS…), `send()` no longer receives a list of arguments but a single `NewDeviceNotification` carrying the user reference, the user information, the **persisted log** and the confirmation links (`null` unless the confirmation feature is enabled).
 
 **Before:**
 
@@ -65,7 +154,7 @@ use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 
 final class SlackNotification implements NotificationInterface
 {
-    public function send(UserInformation $userInformation, UserReference $userReference): void
+    public function send(UserInformation $userInformation, UserReference $userReference, ?ConfirmationLinks $confirmationLinks = null): void
     {
         // ...
     }
@@ -75,39 +164,95 @@ final class SlackNotification implements NotificationInterface
 **After:**
 
 ```php
-use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationLinks;
+use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotification;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 
 final class SlackNotification implements NotificationInterface
 {
-    public function send(UserInformation $userInformation, UserReference $userReference, ?ConfirmationLinks $confirmationLinks = null): void
+    public function send(NewDeviceNotification $notification): void
     {
-        // Use $confirmationLinks->acknowledgeUrl / ->disavowUrl when not null
+        $notification->userReference;      // email, display name, user identity
+        $notification->userInformation;    // IP, user agent, location
+        $notification->authenticationLog;  // the log that was just persisted
+        $notification->confirmationLinks;  // null unless confirmation is enabled
     }
 }
 ```
 
-### 3. Custom handler (advanced): `handle()` now returns the log
+### 4. Custom handler (advanced): `UserIdentity` and returned log
 
-Only relevant if you replaced the bundle's default `DoctrineAuthenticationLogHandler` with your own `AuthenticationLogHandlerInterface` implementation. `handle()` no longer returns `void` — it returns the persisted `AuthenticationLogInterface` (so the caller can pass it to the notification). Return the log you saved.
+Only relevant if you replaced the bundle's default `DoctrineAuthenticationLogHandler` with your own `AuthenticationLogHandlerInterface` implementation.
 
 ```php
 // Before
+public function isKnown(string $userIdentifier, UserInformation $userInformation): bool
 public function handle(string $userIdentifier, UserInformation $userInformation): void
 
 // After
-public function handle(string $userIdentifier, UserInformation $userInformation): AuthenticationLogInterface
+public function isKnown(UserIdentity $userIdentity, UserInformation $userInformation): bool
+public function handle(UserIdentity $userIdentity, UserInformation $userInformation): AuthenticationLogInterface
 ```
+
+`handle()` must return the log it saved, so the caller can pass it to the event and to the notification.
+
+### 5. `NEW_DEVICE` listeners: nothing to change
+
+`AuthenticationLogEvent::userIdentifier()` is still there, so existing listeners keep working. Two accessors are new:
+
+```php
+public function __invoke(AuthenticationLogEvent $event): void
+{
+    $event->userIdentifier();            // unchanged
+    $event->userIdentity()->userClass;   // new: the user FQCN
+    $event->authenticationLog();         // new: the persisted log
+}
+```
+
+Only code that **constructs** the event (typically your tests) has to pass the three arguments.
+
+### 6. Messenger: drain the queue before deploying
+
+`LoginParameterDto` now carries a `UserIdentity` object instead of a `userIdentifier` string, so the payload shape of `AuthLoginMessage` changes. A 2.x message decoded by 3.0 code fails (`Cannot create dynamic property …::$userIdentifier`, surfaced as a `MessageDecodingFailedException`) and is rejected — those logins would be lost.
+
+If you route `AuthLoginMessage` to an asynchronous transport, drain the queue first:
+
+```bash
+bin/console messenger:stop-workers   # let the running workers finish
+# consume until the transport is empty, then deploy and restart the workers
+```
+
+With the `serializer` transport the DTO is denormalized through its constructor, so the nested `UserIdentity` requires `symfony/property-info` to be wired. Draining the queue avoids the question entirely — do it whichever transport you use.
+
+### 7. Twig template
+
+The email context gains `authenticationLog` (the persisted log) and `userReference`. The `authenticableLog` variable still points to the same `UserReference` object, but it is deprecated in favour of `userReference` and will be removed in 4.0. If your overridden template read `authenticableLog.userIdentifier`, use `userReference.userIdentity.userIdentifier` instead.
 
 ### Summary of Changed Interfaces
 
 | Interface | Change |
 |---|---|
-| `AuthenticationLogInterface` | **New.** Abstraction for an authentication log (`getUser()` + read accessors). `AbstractAuthenticationLog` implements it |
-| `AuthenticationLogRepositoryInterface` | `save()` now type-hints `AuthenticationLogInterface` instead of `AbstractAuthenticationLog` |
-| `AuthenticationLogCreatorInterface` | `createLog()` now returns `AuthenticationLogInterface` |
-| `NotificationInterface` | `send()` gains a third argument `?ConfirmationLinks $confirmationLinks = null` |
-| `AuthenticationLogHandlerInterface` | `handle()` now returns `AuthenticationLogInterface` (was `void`) — advanced, only if you replaced the default handler |
+| `AuthenticationLogInterface` | **New.** Abstraction for an authentication log (`getUser()` + read accessors), plus `getUserClass()`. `AbstractAuthenticationLog` implements it |
+| `AuthenticationLogRepositoryInterface` | `save()` type-hints `AuthenticationLogInterface`; `findExistingLog()` takes a `UserIdentity` |
+| `AuthenticationLogCreatorInterface` | `createLog()` takes a `UserIdentity` and returns `AuthenticationLogInterface` |
+| `NotificationInterface` | `send()` takes a single `NewDeviceNotification` argument |
+| `AuthenticationLogHandlerInterface` | `isKnown()` / `handle()` take a `UserIdentity`; `handle()` returns `AuthenticationLogInterface` (was `void`) — advanced, only if you replaced the default handler |
+
+### Summary of New Classes
+
+| Class | Purpose |
+|---|---|
+| `Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity` | User identifier + user class (FQCN). `UserIdentity::fromUser()` builds it from a `UserInterface`, resolving Doctrine proxies |
+| `Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotification` | Everything a notification needs: user reference, user information, persisted log, confirmation links |
+
+### Summary of Changed Classes
+
+| Class | Change |
+|---|---|
+| `AbstractAuthenticationLog` | Constructor takes a `UserIdentity` first; new `user_class` column and `getUserClass()` |
+| `LoginParameterDto` | `userIdentifier` (string) replaced by `userIdentity` (`UserIdentity`) |
+| `UserReference` | `userIdentifier` (string) replaced by `userIdentity` (`UserIdentity`) |
+| `AuthenticationLogEvent` | Constructor takes `(UserIdentity, UserInformation, AuthenticationLogInterface)`; new `userIdentity()` and `authenticationLog()` accessors; `userIdentifier()` kept |
+| `MailerNotification` | Template context gains `authenticationLog` and `userReference` (`authenticableLog` deprecated) |
 
 ## Upgrading from 1.x to 2.0
 

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 296" width="400" height="296" fill="none">
+  <defs>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="rgba(0,0,0,0.5)" flood-opacity="1"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#sh)">
+    <rect x="14" y="14" width="372" height="268" rx="18" fill="#202127" stroke="#32333b"/>
+  </g>
+
+  <text x="38" y="58" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#f3f4f6">New sign-in detected</text>
+  <text x="38" y="79" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="14" fill="#9ca3af">a moment ago</text>
+
+  <rect x="38" y="104" width="324" height="1" fill="#32333b"/>
+
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="14.5" fill="#9ca3af">
+    <text x="38" y="140">Location</text>
+    <text x="38" y="174">IP address</text>
+    <text x="38" y="208">Device</text>
+  </g>
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="14.5" font-weight="500" fill="#f3f4f6">
+    <text x="362" y="140" text-anchor="end">Lyon, France</text>
+    <text x="362" y="174" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13.5">82.66.14.203</text>
+    <text x="362" y="208" text-anchor="end">Chrome · macOS</text>
+  </g>
+
+  <rect x="38" y="232" width="150" height="34" rx="17" fill="#3960ff"/>
+  <text x="113" y="254" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#ffffff" text-anchor="middle">It was me</text>
+
+  <rect x="200" y="232" width="162" height="34" rx="17" fill="#26272e" stroke="#3c3d47"/>
+  <text x="281" y="254" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#f3f4f6" text-anchor="middle">It wasn't me</text>
+</svg>

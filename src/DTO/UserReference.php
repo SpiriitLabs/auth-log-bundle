@@ -12,7 +12,7 @@ namespace Spiriit\Bundle\AuthLogBundle\DTO;
 final readonly class UserReference
 {
     public function __construct(
-        public string $userIdentifier,
+        public UserIdentity $userIdentity,
         public string $email,
         public string $displayName,
     ) {
