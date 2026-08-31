@@ -3,7 +3,8 @@
 This optional feature adds two **signed links** to the notification email, so the user can confirm the login was theirs — or report that it wasn't — from any device, without being logged in.
 
 - **Signed and expiring**, with your application secret.
-- **Safe from link scanners**: clicking opens an intermediate page whose button issues a `POST`, so Outlook Safe Links and friends cannot answer on the user's behalf.
+- **Safe from link scanners**: clicking opens an intermediate page whose button issues a `POST`, so Outlook Safe Links and friends cannot answer on the user's behalf. That page recaps the login being reviewed — IP address, device, date and location — so the decision is not taken blind.
+- **Fails early**: an unknown or already-handled token is reported on the `GET`, before the user clicks anything.
 - **Single-use**: replaying a handled link shows an "already handled" page. If the log itself no longer exists — pruned by your retention policy — the page reports an invalid link with a `404` status.
 
 The bundle records the outcome, executes the configured [disavowal reactions](/features/disavowal-reactions), then **dispatches an event** so your application can go further.
@@ -120,3 +121,5 @@ final class LoginDisavowedListener
 ## Overriding the confirmation pages
 
 Same mechanism as the [email template](/advanced/email-template), under `templates/bundles/SpiriitAuthLogBundle/confirmation/`.
+
+`confirmation/show.html.twig` receives `action` (`acknowledge` or `disavow`) and `authenticationLog`, the `ConfirmableAuthenticationLogInterface` being reviewed — read `getIpAddress()`, `getUserAgent()`, `getLoginAt()` and `getLocation()` from it to render your own recap.

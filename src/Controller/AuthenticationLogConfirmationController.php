@@ -44,10 +44,6 @@ final readonly class AuthenticationLogConfirmationController
             return $this->render('expired', Response::HTTP_FORBIDDEN);
         }
 
-        if (!$request->isMethod(Request::METHOD_POST)) {
-            return $this->renderConfirmationForm($action);
-        }
-
         $authenticationLog = $this->confirmableAuthenticationLogRepository->findOneByConfirmationToken($token);
 
         if (null === $authenticationLog) {
@@ -56,6 +52,10 @@ final readonly class AuthenticationLogConfirmationController
 
         if (!$authenticationLog->isPending()) {
             return $this->render('already_reviewed');
+        }
+
+        if (!$request->isMethod(Request::METHOD_POST)) {
+            return $this->renderConfirmationForm($action, $authenticationLog);
         }
 
         $this->review($authenticationLog, $action);
@@ -91,10 +91,11 @@ final readonly class AuthenticationLogConfirmationController
         return 0 === $expires || $expires < time();
     }
 
-    private function renderConfirmationForm(ConfirmationAction $action): Response
+    private function renderConfirmationForm(ConfirmationAction $action, ConfirmableAuthenticationLogInterface $authenticationLog): Response
     {
         return new Response($this->twig->render('@SpiriitAuthLog/confirmation/show.html.twig', [
             'action' => $action->value,
+            'authenticationLog' => $authenticationLog,
         ]));
     }
 

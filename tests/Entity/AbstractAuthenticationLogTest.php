@@ -43,6 +43,16 @@ final class AbstractAuthenticationLogTest extends TestCase
         self::assertSame(StubUser::class, $log->getUserClass());
     }
 
+    public function testItShouldRememberTheIdentityItWasLoggedFor(): void
+    {
+        $userInformation = new UserInformation('192.168.1.1', 'Mozilla/5.0', new \DateTimeImmutable(), null);
+
+        $log = $this->createConcreteLog($userInformation);
+
+        self::assertSame('user-1', $log->userIdentity()->userIdentifier);
+        self::assertSame(StubUser::class, $log->userIdentity()->userClass);
+    }
+
     public function testConstructorAndGettersWithLocation(): void
     {
         $loginAt = new \DateTimeImmutable('2025-06-01 14:00:00');

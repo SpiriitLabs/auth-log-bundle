@@ -10,7 +10,7 @@ use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
 #[ORM\Entity(repositoryClass: UserAuthLogRepository::class)]
-#[ORM\Index(columns: ['user_id', 'user_class', 'ip_address'])]
+#[ORM\Index(columns: ['user_identifier', 'user_class', 'ip_address'])]
 class UserAuthLog extends AbstractAuthenticationLog
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
@@ -32,7 +32,9 @@ class UserAuthLog extends AbstractAuthenticationLog
 }
 ```
 
-`AbstractAuthenticationLog` is a Doctrine mapped superclass: it brings the IP address, user agent, location, login timestamp and `user_class` columns. You only declare the identifier and the relation to your own User entity.
+`AbstractAuthenticationLog` is a Doctrine mapped superclass: it brings the IP address, user agent, location, login timestamp and the `user_identifier` / `user_class` columns. You only declare the identifier and the relation to your own User entity.
+
+The two identity columns are the log's own memory of *who* it was written for — `userIdentity()` returns them as a `UserIdentity`. The relation serves a different purpose: acting on the account as it stands today, which the [disavowal reactions](/features/disavowal-reactions) need. Keep them distinct: an identity rebuilt from the current user row is no longer a record of the past.
 
 The index matches the lookup performed on every login — see [Repository](/guide/repository).
 

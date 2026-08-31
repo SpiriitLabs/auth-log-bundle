@@ -11,11 +11,14 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\Entity;
 
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\LocateUserInformation\LocateValues;
 
 interface AuthenticationLogInterface
 {
     public function getUser(): AuthLogUserInterface;
+
+    public function userIdentity(): UserIdentity;
 
     public function getUserClass(): string;
 

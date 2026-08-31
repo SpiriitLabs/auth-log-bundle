@@ -25,14 +25,15 @@ final class ForcePasswordResetReactionTest extends TestCase
     {
         $user = new StubUser();
 
-        $log = $this->createStub(ConfirmableAuthenticationLogInterface::class);
-        $log->method('getUser')->willReturn($user);
-
         $passwordResetRequester = $this->createMock(PasswordResetRequesterInterface::class);
         $passwordResetRequester->expects(self::once())->method('requestPasswordReset')->with($user);
 
         $reaction = new ForcePasswordResetReaction($passwordResetRequester);
 
-        $reaction->react(new DisavowedLogin($log, new UserIdentity('user@test.com', StubUser::class)));
+        $reaction->react(new DisavowedLogin(
+            $this->createStub(ConfirmableAuthenticationLogInterface::class),
+            $user,
+            new UserIdentity('user@test.com', StubUser::class),
+        ));
     }
 }

@@ -4,9 +4,39 @@
 
 Release 4.0 introduces disavowal reactions: when a user clicks "It wasn't me", the bundle now acts instead of only dispatching an event. The default reaction revokes the user's known contexts so the attacker's next login raises a fresh alert — fixing a 3.x gap where a disavowed context still counted as known and silenced future notifications.
 
-Nothing changes if you do not use the login confirmation feature.
+It also fixes a design flaw introduced with the confirmation feature: the log knew which user *class* it belonged to, but not which user — so the bundle had to reload the User entity to find out. A log is a journal: it must remember, not ask again.
 
-### 1. Implement `RevocableAuthenticationLogRepositoryInterface` (required with confirmation)
+### 1. New `user_identifier` column (required, schema migration)
+
+`AbstractAuthenticationLog` gains a `user_identifier` column, filled from the `UserIdentity` your creator already receives — no constructor change on your side. Generate the migration with `doctrine:migrations:diff`, then back-fill existing rows before applying the `NOT NULL` constraint:
+
+```php
+$this->addSql('ALTER TABLE user_auth_log ADD user_identifier VARCHAR(255) DEFAULT NULL');
+$this->addSql('UPDATE user_auth_log l SET user_identifier = (SELECT u.email FROM "user" u WHERE u.id = l.user_id)');
+$this->addSql('ALTER TABLE user_auth_log ALTER COLUMN user_identifier SET NOT NULL');
+```
+
+If some logs point to a since-deleted user, the sub-select yields `NULL` and the constraint is refused: decide first whether those orphans keep the identifier as an empty string or get deleted. Replace `u.email` with whatever your `getUserIdentifier()` returns, and update the index to `['user_identifier', 'user_class', 'ip_address']`.
+
+Implementing `AuthenticationLogInterface` without the mapped superclass? Write `userIdentity(): UserIdentity` yourself — it must return the identity the log was **written with**, never one rebuilt from the current user row.
+
+### 2. Simplify `findExistingLog()` (recommended)
+
+The lookup no longer needs the User entity, which removes one query per login:
+
+```php
+return null !== $this->findOneBy([
+    'userIdentifier' => $userIdentity->userIdentifier,
+    'userClass' => $userIdentity->userClass,
+    'ipAddress' => $userInformation->ipAddress,
+]);
+```
+
+### 3. `DisavowedLogin` carries the resolved user
+
+Custom reactions read `$disavowedLogin->user` instead of `$disavowedLogin->authenticationLog->getUser()`. The executor resolves the user **once**, before any reaction runs; if it cannot, every reaction is skipped and the failure is logged.
+
+### 4. Implement `RevocableAuthenticationLogRepositoryInterface` (required with confirmation)
 
 The `revoke_known_contexts` reaction is **enabled by default** as soon as `confirmation.enabled` is `true`. Your repository must implement the new interface — container compilation fails with an explicit message otherwise:
 
@@ -21,14 +51,14 @@ class UserAuthLogRepository extends EntityRepository implements
     public function revokeKnownContexts(UserIdentity $userIdentity): void
     {
         // UPDATE ... SET status = 'revoked'
-        // WHERE user/userClass match AND status IN ('pending', 'acknowledged')
+        // WHERE userIdentifier/userClass match AND status IN ('pending', 'acknowledged')
     }
 }
 ```
 
 To keep the 3.x behavior instead, set `spiriit_auth_log.confirmation.on_disavowal.revoke_known_contexts` to `false`.
 
-### 2. Exclude revoked logs from `findExistingLog()` (required with confirmation)
+### 5. Exclude revoked logs from `findExistingLog()` (required with confirmation)
 
 Add a status filter so a revoked or disavowed log no longer makes a context "known":
 
@@ -36,18 +66,18 @@ Add a status filter so a revoked or disavowed log no longer makes a context "kno
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogStatus;
 
 return null !== $this->findOneBy([
-    'user' => $user,
+    'userIdentifier' => $userIdentity->userIdentifier,
     'userClass' => $userIdentity->userClass,
     'ipAddress' => $userInformation->ipAddress,
     'status' => [AuthenticationLogStatus::PENDING, AuthenticationLogStatus::ACKNOWLEDGED],
 ]);
 ```
 
-### 3. New `AuthenticationLogStatus::REVOKED` case
+### 6. New `AuthenticationLogStatus::REVOKED` case
 
 The enum gains a `REVOKED = 'revoked'` case and the confirmable trait a `revoke()` method. The status column already stores strings up to 20 characters, so **no schema migration is needed** — but any exhaustive `match` on `AuthenticationLogStatus` must handle the new case.
 
-### 4. Optional reactions
+### 7. Optional reactions
 
 `on_disavowal.invalidate_sessions` (port: `SessionInvalidatorInterface`) and `on_disavowal.force_password_reset` (port: `PasswordResetRequesterInterface`) are opt-in. Custom reactions implement `DisavowalReactionInterface` and are picked up automatically. See the documentation for details.
 

@@ -24,6 +24,6 @@ final readonly class ForcePasswordResetReaction implements DisavowalReactionInte
 
     public function react(DisavowedLogin $disavowedLogin): void
     {
-        $this->passwordResetRequester->requestPasswordReset($disavowedLogin->authenticationLog->getUser());
+        $this->passwordResetRequester->requestPasswordReset($disavowedLogin->user);
     }
 }

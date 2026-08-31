@@ -30,6 +30,20 @@
             color: #555;
             line-height: 1.6;
         }
+        .info {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        .info p {
+            margin: 6px 0;
+        }
+        .info strong {
+            display: inline-block;
+            width: 120px;
+        }
         button {
             margin-top: 20px;
             padding: 12px 24px;
@@ -52,6 +66,20 @@
 <div class="container">
     <h1>{{ ('confirmation.show.' ~ action ~ '.title')|trans({}, 'SpiriitAuthLogBundle') }}</h1>
     <p>{{ ('confirmation.show.' ~ action ~ '.message')|trans({}, 'SpiriitAuthLogBundle') }}</p>
+
+    <div class="info">
+        <p><strong>{{ 'confirmation.show.details.ip'|trans({}, 'SpiriitAuthLogBundle') }}</strong> {{ authenticationLog.ipAddress ?? '-' }}</p>
+        <p><strong>{{ 'confirmation.show.details.device'|trans({}, 'SpiriitAuthLogBundle') }}</strong> {{ authenticationLog.userAgent ?? '-' }}</p>
+        <p><strong>{{ 'confirmation.show.details.date'|trans({}, 'SpiriitAuthLogBundle') }}</strong> {{ authenticationLog.loginAt ? authenticationLog.loginAt|date('Y-m-d H:i') : '-' }}</p>
+        <p><strong>{{ 'confirmation.show.details.location'|trans({}, 'SpiriitAuthLogBundle') }}</strong>
+            {% if authenticationLog.location is not null %}
+                {{ authenticationLog.location.city ?? '-' }}, {{ authenticationLog.location.country ?? '-' }}
+            {% else %}
+                -
+            {% endif %}
+        </p>
+    </div>
+
     <form method="post" action="{{ app.request.requestUri }}">
         <button type="submit" class="{{ action }}">{{ ('confirmation.show.' ~ action ~ '.button')|trans({}, 'SpiriitAuthLogBundle') }}</button>
     </form>

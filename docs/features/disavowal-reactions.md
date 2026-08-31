@@ -36,10 +36,10 @@ class UserAuthLogRepository extends EntityRepository implements RevocableAuthent
         $this->getEntityManager()->createQuery(
             'UPDATE App\Entity\UserAuthLog l
              SET l.status = :revoked
-             WHERE l.user = :user AND l.userClass = :userClass AND l.status IN (:revocable)'
+             WHERE l.userIdentifier = :userIdentifier AND l.userClass = :userClass AND l.status IN (:revocable)'
         )
             ->setParameter('revoked', AuthenticationLogStatus::REVOKED->value)
-            ->setParameter('user', $this->findUser($userIdentity))
+            ->setParameter('userIdentifier', $userIdentity->userIdentifier)
             ->setParameter('userClass', $userIdentity->userClass)
             ->setParameter('revocable', [AuthenticationLogStatus::PENDING->value, AuthenticationLogStatus::ACKNOWLEDGED->value])
             ->getQuery()
@@ -103,7 +103,8 @@ final class NotifySecurityTeamReaction implements DisavowalReactionInterface
     public function react(DisavowedLogin $disavowedLogin): void
     {
         $log = $disavowedLogin->authenticationLog;   // the disavowed log
-        $identity = $disavowedLogin->userIdentity;   // identifier + user class
+        $identity = $disavowedLogin->userIdentity;   // identifier + user class, as recorded on the log
+        $user = $disavowedLogin->user;               // the account to act on, resolved once by the executor
 
         // page the on-call, open a ticket...
     }
@@ -114,4 +115,5 @@ final class NotifySecurityTeamReaction implements DisavowalReactionInterface
 
 - Reactions run **synchronously** in the confirmation controller, after the log is saved and **before** `LOGIN_DISAVOWED` is dispatched: when your listeners run, the protections are already in place. An event you dispatch manually triggers no reaction.
 - Order follows the `priority` attribute of the `spiriit_auth_log.disavowal_reaction` tag, higher first: `revoke_known_contexts` (100), `invalidate_sessions` (50), `force_password_reset` (0). Custom reactions default to 0 — set a priority through `#[AutoconfigureTag]`.
+- The executor resolves the user **once**, before the first reaction. If the account cannot be resolved — deleted row, broken relation — no reaction runs and the failure is logged: a partial protection is worse than none.
 - Each reaction is isolated: if one throws, the failure is logged and the **remaining reactions still run**.

@@ -22,6 +22,6 @@ templates/bundles/SpiriitAuthLogBundle/new_device.html.twig
 | `userReference.email` | `string` | User email |
 | `userReference.userIdentity.userIdentifier` | `string` | User identifier |
 | `userReference.userIdentity.userClass` | `string` | User class (FQCN) |
-| `authenticationLog` | `AuthenticationLogInterface` | The persisted log (`getUser()`, `getLoginAt()`, `getUserClass()`…) |
+| `authenticationLog` | `AuthenticationLogInterface` | The persisted log (`getUser()`, `getLoginAt()`, `userIdentity()`…) |
 | `confirmationLinks` | `?ConfirmationLinks` | `acknowledgeUrl` / `disavowUrl` — only set when the [confirmation feature](/features/login-confirmation) is enabled |
 | `authenticableLog` | `UserReference` | **Deprecated** alias of `userReference`, removed in 4.0 |

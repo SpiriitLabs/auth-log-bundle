@@ -24,6 +24,6 @@ final readonly class InvalidateSessionsReaction implements DisavowalReactionInte
 
     public function react(DisavowedLogin $disavowedLogin): void
     {
-        $this->sessionInvalidator->invalidateSessions($disavowedLogin->authenticationLog->getUser());
+        $this->sessionInvalidator->invalidateSessions($disavowedLogin->user);
     }
 }

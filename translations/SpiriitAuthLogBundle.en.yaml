@@ -6,6 +6,11 @@ confirmation:
         acknowledge: 'It was me'
         disavow: "It wasn't me"
     show:
+        details:
+            ip: 'IP address:'
+            device: 'Device:'
+            date: 'Date:'
+            location: 'Location:'
         acknowledge:
             title: 'Confirm this login'
             message: 'You are about to confirm that this login was made by you.'

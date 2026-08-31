@@ -139,6 +139,54 @@ final class AuthenticationLogConfirmationControllerTest extends TestCase
         self::assertTrue($log->isPending());
     }
 
+    public function testItShouldPassTheLogToTheConfirmationFormSoItCanShowTheLoginDetails(): void
+    {
+        $log = $this->pendingLog();
+
+        $twig = $this->createMock(Environment::class);
+        $twig->expects(self::once())
+            ->method('render')
+            ->with(
+                '@SpiriitAuthLog/confirmation/show.html.twig',
+                self::callback(static fn (array $context): bool => ($context['authenticationLog'] ?? null) === $log
+                    && 'acknowledge' === ($context['action'] ?? null)),
+            )
+            ->willReturn('form');
+
+        $controller = $this->controller($this->repository($log), $this->createMock(EventDispatcherInterface::class), $twig);
+
+        $controller($this->signedRequest('acknowledge', 'the-token', 'GET'), ConfirmationAction::ACKNOWLEDGE, 'the-token');
+    }
+
+    public function testItShouldReportNotFoundOnGetWhenTokenMatchesNoLog(): void
+    {
+        $controller = $this->controller(
+            $this->repository($this->pendingLog()),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->twigExpecting('result', 'not_found'),
+        );
+
+        $response = $controller($this->signedRequest('acknowledge', 'unknown-token', 'GET'), ConfirmationAction::ACKNOWLEDGE, 'unknown-token');
+
+        self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+    }
+
+    public function testItShouldReportAnAlreadyReviewedLogOnGetWithoutShowingTheForm(): void
+    {
+        $log = $this->pendingLog();
+        $log->acknowledge();
+
+        $controller = $this->controller(
+            $this->repository($log),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->twigExpecting('result', 'already_reviewed'),
+        );
+
+        $response = $controller($this->signedRequest('acknowledge', 'the-token', 'GET'), ConfirmationAction::ACKNOWLEDGE, 'the-token');
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+    }
+
     public function testItShouldRejectATamperedSignature(): void
     {
         $dispatcher = $this->createMock(EventDispatcherInterface::class);

@@ -6,6 +6,11 @@ confirmation:
         acknowledge: "C'était moi"
         disavow: "Ce n'était pas moi"
     show:
+        details:
+            ip: 'Adresse IP :'
+            device: 'Appareil :'
+            date: 'Date :'
+            location: 'Localisation :'
         acknowledge:
             title: 'Confirmer cette connexion'
             message: 'Vous êtes sur le point de confirmer que cette connexion vient bien de vous.'

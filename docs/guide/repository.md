@@ -27,14 +27,8 @@ class UserAuthLogRepository extends EntityRepository implements
 
     public function findExistingLog(UserIdentity $userIdentity, UserInformation $userInformation): bool
     {
-        $user = $this->findUser($userIdentity);
-
-        if (null === $user) {
-            return false;
-        }
-
         return null !== $this->findOneBy([
-            'user' => $user,
+            'userIdentifier' => $userIdentity->userIdentifier,
             'userClass' => $userIdentity->userClass,
             'ipAddress' => $userInformation->ipAddress,
         ]);
@@ -68,13 +62,15 @@ The bundle listens to `LoginSuccessEvent`, checks whether the context is known, 
 
 `findExistingLog()` is what defines a known context for your application. The example above matches the identity and the IP address — widen it to the user agent or the location for a stricter definition.
 
+The lookup reads the log's own `user_identifier` and `user_class` columns, so it costs a single query: only `createLog()` needs the User entity itself.
+
 With [login confirmation](/features/login-confirmation) enabled, also exclude the logs the user disavowed and those revoked by the [disavowal reactions](/features/disavowal-reactions) — otherwise a reported context would still count as known and silence future alerts:
 
 ```php
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogStatus;
 
 return null !== $this->findOneBy([
-    'user' => $user,
+    'userIdentifier' => $userIdentity->userIdentifier,
     'userClass' => $userIdentity->userClass,
     'ipAddress' => $userInformation->ipAddress,
     'status' => [AuthenticationLogStatus::PENDING, AuthenticationLogStatus::ACKNOWLEDGED],

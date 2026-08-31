@@ -87,7 +87,7 @@ use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 
 #[ORM\Entity(repositoryClass: UserAuthLogRepository::class)]
-#[ORM\Index(columns: ['user_id', 'user_class', 'ip_address'])]
+#[ORM\Index(columns: ['user_identifier', 'user_class', 'ip_address'])]
 class UserAuthLog extends AbstractAuthenticationLog
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
@@ -118,7 +118,7 @@ Your repository must implement two interfaces:
 - `AuthenticationLogRepositoryInterface` — check if a log already exists and save new logs
 - `AuthenticationLogCreatorInterface` — build the log entity from a user identity and user information
 
-A `UserIdentity` carries both the user identifier and the user class (FQCN). Keep the class in the lookup: two accounts of different classes may share the same identifier.
+A `UserIdentity` carries both the user identifier and the user class (FQCN). Keep the class in the lookup: two accounts of different classes may share the same identifier. The log stores both, so `findExistingLog()` needs no join to the User entity — only `createLog()` does.
 
 ```php
 use Doctrine\ORM\EntityRepository;
@@ -140,14 +140,8 @@ class UserAuthLogRepository extends EntityRepository implements
 
     public function findExistingLog(UserIdentity $userIdentity, UserInformation $userInformation): bool
     {
-        $user = $this->findUser($userIdentity);
-
-        if (null === $user) {
-            return false;
-        }
-
         return null !== $this->findOneBy([
-            'user' => $user,
+            'userIdentifier' => $userIdentity->userIdentifier,
             'userClass' => $userIdentity->userClass,
             'ipAddress' => $userInformation->ipAddress,
         ]);
@@ -416,7 +410,7 @@ Available variables in the template:
 | `userReference.email` | `string` | User email |
 | `userReference.userIdentity.userIdentifier` | `string` | User identifier |
 | `userReference.userIdentity.userClass` | `string` | User class (FQCN) |
-| `authenticationLog` | `AuthenticationLogInterface` | The persisted log (`getUser()`, `getLoginAt()`, `getUserClass()`…) |
+| `authenticationLog` | `AuthenticationLogInterface` | The persisted log (`getUser()`, `getLoginAt()`, `userIdentity()`…) |
 | `confirmationLinks` | `?ConfirmationLinks` | `acknowledgeUrl` / `disavowUrl` — only set when the confirmation feature is enabled |
 | `authenticableLog` | `UserReference` | **Deprecated** alias of `userReference`, removed in 4.0 |
 

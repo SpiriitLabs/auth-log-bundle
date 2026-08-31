@@ -21,6 +21,9 @@ use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 abstract class AbstractAuthenticationLog implements AuthenticationLogInterface
 {
     #[ORM\Column(type: Types::STRING, length: 255)]
+    protected string $userIdentifier;
+
+    #[ORM\Column(type: Types::STRING, length: 255)]
     protected string $userClass;
 
     #[ORM\Column(type: Types::STRING, length: 45, nullable: true)]
@@ -42,6 +45,7 @@ abstract class AbstractAuthenticationLog implements AuthenticationLogInterface
         UserIdentity $userIdentity,
         UserInformation $userInformation,
     ) {
+        $this->userIdentifier = $userIdentity->userIdentifier;
         $this->userClass = $userIdentity->userClass;
         $this->loginAt = $userInformation->loginAt;
         $this->userAgent = $userInformation->userAgent;
@@ -50,6 +54,11 @@ abstract class AbstractAuthenticationLog implements AuthenticationLogInterface
         if (null !== $userInformation->location) {
             $this->location = get_object_vars($userInformation->location);
         }
+    }
+
+    public function userIdentity(): UserIdentity
+    {
+        return new UserIdentity($this->userIdentifier, $this->userClass);
     }
 
     public function getUserClass(): string

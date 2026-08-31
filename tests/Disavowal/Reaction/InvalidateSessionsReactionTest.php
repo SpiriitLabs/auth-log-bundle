@@ -25,14 +25,15 @@ final class InvalidateSessionsReactionTest extends TestCase
     {
         $user = new StubUser();
 
-        $log = $this->createStub(ConfirmableAuthenticationLogInterface::class);
-        $log->method('getUser')->willReturn($user);
-
         $sessionInvalidator = $this->createMock(SessionInvalidatorInterface::class);
         $sessionInvalidator->expects(self::once())->method('invalidateSessions')->with($user);
 
         $reaction = new InvalidateSessionsReaction($sessionInvalidator);
 
-        $reaction->react(new DisavowedLogin($log, new UserIdentity('user@test.com', StubUser::class)));
+        $reaction->react(new DisavowedLogin(
+            $this->createStub(ConfirmableAuthenticationLogInterface::class),
+            $user,
+            new UserIdentity('user@test.com', StubUser::class),
+        ));
     }
 }

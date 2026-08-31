@@ -30,6 +30,10 @@ final class RevokeKnownContextsReactionTest extends TestCase
 
         $reaction = new RevokeKnownContextsReaction($repository);
 
-        $reaction->react(new DisavowedLogin($this->createStub(ConfirmableAuthenticationLogInterface::class), $userIdentity));
+        $reaction->react(new DisavowedLogin(
+            $this->createStub(ConfirmableAuthenticationLogInterface::class),
+            new StubUser(),
+            $userIdentity,
+        ));
     }
 }

@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Spiriit\Bundle\AuthLogBundle\Disavowal;
 
 use Psr\Log\LoggerInterface;
-use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 
 final readonly class DisavowalReactionExecutor
@@ -29,7 +28,7 @@ final readonly class DisavowalReactionExecutor
     public function execute(ConfirmableAuthenticationLogInterface $authenticationLog): void
     {
         try {
-            $disavowedLogin = new DisavowedLogin($authenticationLog, UserIdentity::fromUser($authenticationLog->getUser()));
+            $disavowedLogin = new DisavowedLogin($authenticationLog, $authenticationLog->getUser(), $authenticationLog->userIdentity());
         } catch (\Throwable $exception) {
             $this->logger?->error('Disavowal reactions skipped, the user of the disavowed log cannot be resolved: {message}', [
                 'message' => $exception->getMessage(),
