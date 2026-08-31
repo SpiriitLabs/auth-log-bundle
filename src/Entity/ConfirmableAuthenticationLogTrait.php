@@ -46,6 +46,16 @@ trait ConfirmableAuthenticationLogTrait
         $this->review(AuthenticationLogStatus::DISAVOWED);
     }
 
+    public function revoke(): void
+    {
+        // A user's DISAVOWED signal must never be downgraded to a mere revocation.
+        if (\in_array($this->status, [AuthenticationLogStatus::DISAVOWED, AuthenticationLogStatus::REVOKED], true)) {
+            return;
+        }
+
+        $this->status = AuthenticationLogStatus::REVOKED;
+    }
+
     public function confirmationToken(): ?string
     {
         return $this->confirmationToken;

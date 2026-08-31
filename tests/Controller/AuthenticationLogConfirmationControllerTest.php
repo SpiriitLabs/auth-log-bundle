@@ -16,6 +16,9 @@ use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationAction;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationToken;
 use Spiriit\Bundle\AuthLogBundle\Controller\AuthenticationLogConfirmationController;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\DisavowalReactionExecutor;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\DisavowalReactionInterface;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\DisavowedLogin;
 use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogStatus;
@@ -77,6 +80,42 @@ final class AuthenticationLogConfirmationControllerTest extends TestCase
         $controller($this->signedRequest('disavow', 'the-token', 'POST'), ConfirmationAction::DISAVOW, 'the-token');
 
         self::assertSame(AuthenticationLogStatus::DISAVOWED, $log->status());
+    }
+
+    public function testItShouldExecuteDisavowalReactionsWhenDisavowing(): void
+    {
+        $log = $this->pendingLog();
+
+        $reaction = $this->createMock(DisavowalReactionInterface::class);
+        $reaction->expects(self::once())
+            ->method('react')
+            ->with(self::callback(static fn (DisavowedLogin $disavowedLogin): bool => $disavowedLogin->authenticationLog === $log));
+
+        $controller = $this->controller(
+            $this->repository($log),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->twigExpecting('result', 'disavowed'),
+            new DisavowalReactionExecutor([$reaction]),
+        );
+
+        $controller($this->signedRequest('disavow', 'the-token', 'POST'), ConfirmationAction::DISAVOW, 'the-token');
+    }
+
+    public function testItShouldNotExecuteDisavowalReactionsWhenAcknowledging(): void
+    {
+        $log = $this->pendingLog();
+
+        $reaction = $this->createMock(DisavowalReactionInterface::class);
+        $reaction->expects(self::never())->method('react');
+
+        $controller = $this->controller(
+            $this->repository($log),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->twigExpecting('result', 'acknowledged'),
+            new DisavowalReactionExecutor([$reaction]),
+        );
+
+        $controller($this->signedRequest('acknowledge', 'the-token', 'POST'), ConfirmationAction::ACKNOWLEDGE, 'the-token');
     }
 
     public function testItShouldShowTheConfirmationFormOnGet(): void
@@ -153,13 +192,14 @@ final class AuthenticationLogConfirmationControllerTest extends TestCase
         self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
     }
 
-    private function controller(ConfirmableAuthenticationLogRepositoryInterface $repository, EventDispatcherInterface $dispatcher, Environment $twig): AuthenticationLogConfirmationController
+    private function controller(ConfirmableAuthenticationLogRepositoryInterface $repository, EventDispatcherInterface $dispatcher, Environment $twig, ?DisavowalReactionExecutor $disavowalReactionExecutor = null): AuthenticationLogConfirmationController
     {
         return new AuthenticationLogConfirmationController(
             new UriSigner(self::SECRET),
             $repository,
             $dispatcher,
             $twig,
+            $disavowalReactionExecutor,
         );
     }
 
@@ -203,7 +243,7 @@ final class AuthenticationLogConfirmationControllerTest extends TestCase
 
             public function getUser(): AuthLogUserInterface
             {
-                throw new \RuntimeException('Stub');
+                return new StubUser();
             }
         };
         $log->enableConfirmation(new ConfirmationToken('the-token'));

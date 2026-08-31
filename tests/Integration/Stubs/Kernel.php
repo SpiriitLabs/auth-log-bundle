@@ -39,7 +39,7 @@ class Kernel extends BaseKernel
             new Bundle(),
         ];
 
-        if ('confirmation' === $this->config) {
+        if (\in_array($this->config, ['confirmation', 'disavowal'], true)) {
             $bundles[] = new TwigBundle();
         }
 

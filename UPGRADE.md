@@ -1,5 +1,56 @@
 # Upgrade Guide
 
+## Upgrading from 3.x to 4.0
+
+Release 4.0 introduces disavowal reactions: when a user clicks "It wasn't me", the bundle now acts instead of only dispatching an event. The default reaction revokes the user's known contexts so the attacker's next login raises a fresh alert — fixing a 3.x gap where a disavowed context still counted as known and silenced future notifications.
+
+Nothing changes if you do not use the login confirmation feature.
+
+### 1. Implement `RevocableAuthenticationLogRepositoryInterface` (required with confirmation)
+
+The `revoke_known_contexts` reaction is **enabled by default** as soon as `confirmation.enabled` is `true`. Your repository must implement the new interface — container compilation fails with an explicit message otherwise:
+
+```php
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
+use Spiriit\Bundle\AuthLogBundle\Repository\RevocableAuthenticationLogRepositoryInterface;
+
+class UserAuthLogRepository extends EntityRepository implements
+    // ...existing interfaces
+    RevocableAuthenticationLogRepositoryInterface
+{
+    public function revokeKnownContexts(UserIdentity $userIdentity): void
+    {
+        // UPDATE ... SET status = 'revoked'
+        // WHERE user/userClass match AND status IN ('pending', 'acknowledged')
+    }
+}
+```
+
+To keep the 3.x behavior instead, set `spiriit_auth_log.confirmation.on_disavowal.revoke_known_contexts` to `false`.
+
+### 2. Exclude revoked logs from `findExistingLog()` (required with confirmation)
+
+Add a status filter so a revoked or disavowed log no longer makes a context "known":
+
+```php
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogStatus;
+
+return null !== $this->findOneBy([
+    'user' => $user,
+    'userClass' => $userIdentity->userClass,
+    'ipAddress' => $userInformation->ipAddress,
+    'status' => [AuthenticationLogStatus::PENDING, AuthenticationLogStatus::ACKNOWLEDGED],
+]);
+```
+
+### 3. New `AuthenticationLogStatus::REVOKED` case
+
+The enum gains a `REVOKED = 'revoked'` case and the confirmable trait a `revoke()` method. The status column already stores strings up to 20 characters, so **no schema migration is needed** — but any exhaustive `match` on `AuthenticationLogStatus` must handle the new case.
+
+### 4. Optional reactions
+
+`on_disavowal.invalidate_sessions` (port: `SessionInvalidatorInterface`) and `on_disavowal.force_password_reset` (port: `PasswordResetRequesterInterface`) are opt-in. Custom reactions implement `DisavowalReactionInterface` and are picked up automatically. See the documentation for details.
+
 ## Upgrading from 2.x to 3.0
 
 Release 3.0 introduces the optional login-confirmation feature ("It was me / It wasn't me"). As part of it, the bundle's persistence contract no longer references the concrete `AbstractAuthenticationLog` mapped superclass — it now depends on the new `AuthenticationLogInterface`. This decouples the contract from Doctrine inheritance: an integrator can implement a log without extending the mapped superclass.

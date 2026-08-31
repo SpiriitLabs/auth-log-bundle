@@ -1,6 +1,6 @@
 # Custom notification
 
-By default, the bundle sends email alerts via Symfony Mailer. To use a different transport (Slack, SMS, etc.), implement `NotificationInterface` and register it as a service:
+The bundle sends email alerts through Symfony Mailer. For another transport — Slack, SMS… — implement `NotificationInterface` and register it as a service:
 
 ```php
 use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotification;
@@ -10,10 +10,7 @@ final class SlackNotification implements NotificationInterface
 {
     public function send(NewDeviceNotification $notification): void
     {
-        $notification->userReference;      // email, display name, user identity
-        $notification->userInformation;    // IP, user agent, location
-        $notification->authenticationLog;  // the log that was just persisted
-        $notification->confirmationLinks;  // null unless the confirmation feature is enabled
+        // ...
     }
 }
 ```
@@ -30,7 +27,7 @@ spiriit_auth_log:
 
 ## NewDeviceNotification
 
-Everything the bundle knows about the login is carried by a single `final readonly` object:
+Everything the bundle knows about the login, in a single `final readonly` object:
 
 | Property | Type | Description |
 |---|---|---|

@@ -9,12 +9,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Spiriit\Bundle\AuthLogBundle\Entity;
+namespace Spiriit\Bundle\AuthLogBundle\Repository;
 
-enum AuthenticationLogStatus: string
+use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
+
+interface RevocableAuthenticationLogRepositoryInterface
 {
-    case PENDING = 'pending';
-    case ACKNOWLEDGED = 'acknowledged';
-    case DISAVOWED = 'disavowed';
-    case REVOKED = 'revoked';
+    public function revokeKnownContexts(UserIdentity $userIdentity): void;
 }

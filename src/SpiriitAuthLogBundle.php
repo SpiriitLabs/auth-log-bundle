@@ -14,7 +14,14 @@ namespace Spiriit\Bundle\AuthLogBundle;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogCreatorInterface;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogHandlerInterface;
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\DoctrineAuthenticationLogHandler;
+use Spiriit\Bundle\AuthLogBundle\DependencyInjection\Compiler\EnsureDisavowalReactionPortsPass;
 use Spiriit\Bundle\AuthLogBundle\DependencyInjection\Compiler\RegisterTaggedImplementationsPass;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\DisavowalReactionInterface;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\PasswordResetRequesterInterface;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\Reaction\ForcePasswordResetReaction;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\Reaction\InvalidateSessionsReaction;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\Reaction\RevokeKnownContextsReaction;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\SessionInvalidatorInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformation;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformationMethodInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\LocateUserInformation\Geoip2LocateMethod;
@@ -23,6 +30,7 @@ use Spiriit\Bundle\AuthLogBundle\Notification\MailerNotification;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\AuthenticationLogRepositoryInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\ConfirmableAuthenticationLogRepositoryInterface;
+use Spiriit\Bundle\AuthLogBundle\Repository\RevocableAuthenticationLogRepositoryInterface;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -44,8 +52,17 @@ final class SpiriitAuthLogBundle extends AbstractBundle
             ->addTag('spiriit_auth_log.handler');
         $container->registerForAutoconfiguration(ConfirmableAuthenticationLogRepositoryInterface::class)
             ->addTag('spiriit_auth_log.confirmable_repository');
+        $container->registerForAutoconfiguration(DisavowalReactionInterface::class)
+            ->addTag('spiriit_auth_log.disavowal_reaction');
+        $container->registerForAutoconfiguration(RevocableAuthenticationLogRepositoryInterface::class)
+            ->addTag('spiriit_auth_log.revocable_repository');
+        $container->registerForAutoconfiguration(SessionInvalidatorInterface::class)
+            ->addTag('spiriit_auth_log.session_invalidator');
+        $container->registerForAutoconfiguration(PasswordResetRequesterInterface::class)
+            ->addTag('spiriit_auth_log.password_reset_requester');
 
         $container->addCompilerPass(new RegisterTaggedImplementationsPass());
+        $container->addCompilerPass(new EnsureDisavowalReactionPortsPass());
     }
 
     public function configure(DefinitionConfigurator $definition): void
@@ -125,6 +142,28 @@ final class SpiriitAuthLogBundle extends AbstractBundle
                             ->cannotBeEmpty()
                             ->info('Name of the route pointing to the confirmation controller. Override it if you declare your own route instead of importing the bundle one.')
                         ->end()
+                        ->arrayNode('on_disavowal')
+                            ->addDefaultsIfNotSet()
+                            ->info('Built-in reactions executed when the user clicks "It wasn\'t me".')
+                            ->children()
+                                ->booleanNode('revoke_known_contexts')
+                                    ->defaultTrue()
+                                    ->info('Revokes the user\'s known contexts so the attacker\'s next login triggers a new alert. Requires implementing RevocableAuthenticationLogRepositoryInterface.')
+                                ->end()
+                                ->booleanNode('invalidate_sessions')
+                                    ->defaultFalse()
+                                    ->info('Invalidates the user\'s active sessions. Requires implementing SessionInvalidatorInterface.')
+                                ->end()
+                                ->booleanNode('force_password_reset')
+                                    ->defaultFalse()
+                                    ->info('Triggers the application password reset flow. Requires implementing PasswordResetRequesterInterface.')
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->validate()
+                        ->ifTrue(static fn (array $v): bool => !$v['enabled'] && ($v['on_disavowal']['invalidate_sessions'] || $v['on_disavowal']['force_password_reset']))
+                        ->thenInvalid('The "on_disavowal" reactions require "confirmation.enabled" to be set to true.')
                     ->end()
                 ->end()
             ->end()
@@ -200,6 +239,13 @@ final class SpiriitAuthLogBundle extends AbstractBundle
 
             $builder->getDefinition('spiriit_auth_log.new_device_notifier')
                 ->setArgument('$confirmationUrlGenerator', new Reference('spiriit_auth_log.confirmation_url_generator'));
+
+            $container->import('../config/disavowal.php');
+
+            $builder->getDefinition('spiriit_auth_log.confirmation_controller')
+                ->setArgument('$disavowalReactionExecutor', new Reference('spiriit_auth_log.disavowal_reaction_executor'));
+
+            $this->loadDisavowalReactions($config['confirmation']['on_disavowal'], $builder);
         }
 
         // Messenger (async)
@@ -208,6 +254,30 @@ final class SpiriitAuthLogBundle extends AbstractBundle
 
             $builder->getDefinition('spiriit_auth_log.login_listener')
                 ->setArgument('$messageBus', new Reference($config['messenger']));
+        }
+    }
+
+    /**
+     * @param array<string, bool> $onDisavowal
+     */
+    private function loadDisavowalReactions(array $onDisavowal, ContainerBuilder $builder): void
+    {
+        if ($onDisavowal['revoke_known_contexts']) {
+            $builder->setDefinition('spiriit_auth_log.disavowal_reaction.revoke_known_contexts', new Definition(RevokeKnownContextsReaction::class))
+                ->setArgument('$revocableAuthenticationLogRepository', new Reference(RevocableAuthenticationLogRepositoryInterface::class))
+                ->addTag('spiriit_auth_log.disavowal_reaction', ['priority' => 100]);
+        }
+
+        if ($onDisavowal['invalidate_sessions']) {
+            $builder->setDefinition('spiriit_auth_log.disavowal_reaction.invalidate_sessions', new Definition(InvalidateSessionsReaction::class))
+                ->setArgument('$sessionInvalidator', new Reference(SessionInvalidatorInterface::class))
+                ->addTag('spiriit_auth_log.disavowal_reaction', ['priority' => 50]);
+        }
+
+        if ($onDisavowal['force_password_reset']) {
+            $builder->setDefinition('spiriit_auth_log.disavowal_reaction.force_password_reset', new Definition(ForcePasswordResetReaction::class))
+                ->setArgument('$passwordResetRequester', new Reference(PasswordResetRequesterInterface::class))
+                ->addTag('spiriit_auth_log.disavowal_reaction', ['priority' => 0]);
         }
     }
 

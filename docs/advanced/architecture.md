@@ -18,5 +18,9 @@ Internal flow when a user logs in:
 | `AuthenticationLogRepositoryInterface` | decide whether a context is known, and persist logs | [Repository](/guide/repository) |
 | `AuthenticationLogCreatorInterface` | build the log entity | [Repository](/guide/repository) |
 | `ConfirmableAuthenticationLogRepositoryInterface` | look a log up by its confirmation token | [Login confirmation](/features/login-confirmation) |
+| `RevocableAuthenticationLogRepositoryInterface` | revoke a user's known contexts on disavowal | [Disavowal reactions](/features/disavowal-reactions) |
+| `SessionInvalidatorInterface` | log the user out everywhere on disavowal | [Disavowal reactions](/features/disavowal-reactions) |
+| `PasswordResetRequesterInterface` | trigger the password-reset flow on disavowal | [Disavowal reactions](/features/disavowal-reactions) |
+| `DisavowalReactionInterface` | add a custom reaction to a disavowed login | [Disavowal reactions](/features/disavowal-reactions) |
 | `NotificationInterface` | deliver the alert | [Custom notification](/advanced/custom-notification) |
 | `AuthenticationLogHandlerInterface` | replace the whole persistence step | advanced |

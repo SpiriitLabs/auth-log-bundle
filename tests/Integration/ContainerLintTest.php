@@ -223,6 +223,59 @@ class ContainerLintTest extends KernelTestCase
     }
 
     /**
+     * With every disavowal reaction enabled, the executor and the three
+     * built-in reactions must be registered and instantiable.
+     */
+    public function testDisavowalServicesAreInstantiableWhenEnabled(): void
+    {
+        self::bootKernel(['config' => 'disavowal']);
+        $container = self::getContainer();
+
+        foreach ([
+            'spiriit_auth_log.disavowal_reaction_executor',
+            'spiriit_auth_log.disavowal_reaction.revoke_known_contexts',
+            'spiriit_auth_log.disavowal_reaction.invalidate_sessions',
+            'spiriit_auth_log.disavowal_reaction.force_password_reset',
+        ] as $id) {
+            self::assertTrue($container->has($id), \sprintf('Service "%s" should be registered', $id));
+            $container->get($id);
+        }
+    }
+
+    /**
+     * With confirmation enabled and no explicit on_disavowal, only the
+     * default revoke_known_contexts reaction must be registered.
+     */
+    public function testDefaultDisavowalReactionsWithConfirmation(): void
+    {
+        self::bootKernel(['config' => 'confirmation']);
+        $container = self::getContainer();
+
+        self::assertTrue($container->has('spiriit_auth_log.disavowal_reaction_executor'));
+        self::assertTrue($container->has('spiriit_auth_log.disavowal_reaction.revoke_known_contexts'));
+        $container->get('spiriit_auth_log.disavowal_reaction_executor');
+        $container->get('spiriit_auth_log.disavowal_reaction.revoke_known_contexts');
+
+        self::assertFalse($container->has('spiriit_auth_log.disavowal_reaction.invalidate_sessions'));
+        self::assertFalse($container->has('spiriit_auth_log.disavowal_reaction.force_password_reset'));
+    }
+
+    /**
+     * When confirmation is disabled (default), no disavowal service must leak
+     * into the container.
+     */
+    public function testDisavowalServicesAreAbsentWhenConfirmationDisabled(): void
+    {
+        self::bootKernel(['config' => 'minimal']);
+        $container = self::getContainer();
+
+        self::assertFalse($container->has('spiriit_auth_log.disavowal_reaction_executor'));
+        self::assertFalse($container->has('spiriit_auth_log.disavowal_reaction.revoke_known_contexts'));
+        self::assertFalse($container->has('spiriit_auth_log.disavowal_reaction.invalidate_sessions'));
+        self::assertFalse($container->has('spiriit_auth_log.disavowal_reaction.force_password_reset'));
+    }
+
+    /**
      * @return iterable<string, array{string}>
      */
     public static function configProvider(): iterable

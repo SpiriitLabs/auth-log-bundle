@@ -55,4 +55,12 @@ class SpiriitAuthLogExtensionTest extends KernelTestCase
 
         self::bootKernel(['config' => 'invalid_ttl']);
     }
+
+    public function testItShouldFailWhenOnDisavowalIsEnabledWithoutConfirmation(): void
+    {
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('The "on_disavowal" reactions require "confirmation.enabled" to be set to true.');
+
+        self::bootKernel(['config' => 'disavowal_without_confirmation']);
+    }
 }

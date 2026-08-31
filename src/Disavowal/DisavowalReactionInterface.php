@@ -9,12 +9,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Spiriit\Bundle\AuthLogBundle\Entity;
+namespace Spiriit\Bundle\AuthLogBundle\Disavowal;
 
-enum AuthenticationLogStatus: string
+interface DisavowalReactionInterface
 {
-    case PENDING = 'pending';
-    case ACKNOWLEDGED = 'acknowledged';
-    case DISAVOWED = 'disavowed';
-    case REVOKED = 'revoked';
+    public function react(DisavowedLogin $disavowedLogin): void;
 }

@@ -1,13 +1,12 @@
 # Login confirmation
 
-This optional feature adds two **signed links** to the notification email so the user can confirm the login was theirs — or report that it wasn't — from any device, without being logged in.
+This optional feature adds two **signed links** to the notification email, so the user can confirm the login was theirs — or report that it wasn't — from any device, without being logged in.
 
-- The links are signed with your application secret and carry an expiration.
-- Clicking a link opens an intermediate page with a confirmation button that **POSTs** the action. This prevents email link scanners (Outlook Safe Links, etc.) from triggering the action just by following the URL.
-- A link is **single-use**: once the login is acknowledged or disavowed, replaying it shows an "already handled" page.
-- If the login no longer exists (e.g. it was pruned by your retention policy), the page reports that the link is no longer valid, with a `404` status — distinct from the "already handled" page.
+- **Signed and expiring**, with your application secret.
+- **Safe from link scanners**: clicking opens an intermediate page whose button issues a `POST`, so Outlook Safe Links and friends cannot answer on the user's behalf.
+- **Single-use**: replaying a handled link shows an "already handled" page. If the log itself no longer exists — pruned by your retention policy — the page reports an invalid link with a `404` status.
 
-The bundle only records the outcome and **dispatches an event** — your application decides what to do next (e.g. force a password change or log out other sessions on a disavow).
+The bundle records the outcome, executes the configured [disavowal reactions](/features/disavowal-reactions), then **dispatches an event** so your application can go further.
 
 ## 1. Enable the feature
 
@@ -18,7 +17,7 @@ spiriit_auth_log:
         token_ttl: '3 days'   # relative expression: "12 hours", "1 week"...
 ```
 
-Generating absolute URLs from a Messenger worker (no request context) requires a default URI:
+Absolute URLs generated from a Messenger worker have no request context, so set a default URI:
 
 ```yaml
 # config/packages/routing.yaml
@@ -29,7 +28,7 @@ framework:
 
 ## 2. Make your log entity confirmable
 
-Add the trait and interface to the entity that already extends `AbstractAuthenticationLog`, then generate a migration for the new columns (`confirmation_token`, `status`, `responded_at`):
+Add the trait and interface, then generate a migration for the new columns (`confirmation_token`, `status`, `responded_at`):
 
 ```php
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
@@ -46,7 +45,7 @@ class UserAuthLog extends AbstractAuthenticationLog implements ConfirmableAuthen
 ```
 
 ::: info Opt-in
-If you don't enable the feature, nothing changes: the trait and columns are opt-in, so existing integrators don't need a migration.
+Leave the feature disabled and nothing changes: no trait, no columns, no migration.
 :::
 
 ## 3. Implement the confirmable repository
@@ -60,8 +59,6 @@ class UserAuthLogRepository extends EntityRepository implements
     AuthenticationLogCreatorInterface,
     ConfirmableAuthenticationLogRepositoryInterface
 {
-    // ... existing methods
-
     public function findOneByConfirmationToken(string $confirmationToken): ?ConfirmableAuthenticationLogInterface
     {
         return $this->findOneBy(['confirmationToken' => $confirmationToken]);
@@ -71,11 +68,7 @@ class UserAuthLogRepository extends EntityRepository implements
 
 ## 4. Expose the confirmation route
 
-You keep full control over the route. Pick one of the two approaches.
-
-### a. Import the default route
-
-The simplest option. You may add a `prefix`, `host` or `condition` — the generated links follow it automatically:
+**Import the bundle route.** A `prefix`, `host` or `condition` is allowed — the generated links follow it:
 
 ```yaml
 # config/routes/spiriit_auth_log.yaml
@@ -84,9 +77,7 @@ spiriit_auth_log:
     prefix: /security   # optional
 ```
 
-### b. Declare your own route
-
-Point the bundle at it — use this when you want your own path or format:
+**Or declare your own**, for a custom path or format, and point the bundle at it:
 
 ```yaml
 # config/routes.yaml
@@ -106,7 +97,7 @@ spiriit_auth_log:
 
 ## 5. React to the user's response
 
-The bundle dispatches `AuthenticationLogEvents::LOGIN_ACKNOWLEDGED` or `AuthenticationLogEvents::LOGIN_DISAVOWED`, carrying the confirmed log:
+Once the [disavowal reactions](/features/disavowal-reactions) have run, the bundle dispatches `LOGIN_ACKNOWLEDGED` or `LOGIN_DISAVOWED` with the confirmed log, for anything they do not cover:
 
 ```php
 use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogConfirmationEvent;
@@ -121,11 +112,11 @@ final class LoginDisavowedListener
         $log = $event->authenticationLog();
         $user = $log->getUser();
 
-        // e.g. force a password reset, invalidate sessions, notify security...
+        // notify the security team, feed a SIEM...
     }
 }
 ```
 
 ## Overriding the confirmation pages
 
-You can override the confirmation pages the same way as the [email template](/advanced/email-template), under `templates/bundles/SpiriitAuthLogBundle/confirmation/`.
+Same mechanism as the [email template](/advanced/email-template), under `templates/bundles/SpiriitAuthLogBundle/confirmation/`.

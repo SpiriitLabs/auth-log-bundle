@@ -15,12 +15,9 @@ use PHPUnit\Framework\TestCase;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationToken;
 use Spiriit\Bundle\AuthLogBundle\Confirmation\Exception\AuthenticationLogAlreadyReviewedException;
 use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
-use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogStatus;
-use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
-use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
-use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogTrait;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
+use Spiriit\Bundle\Tests\Stubs\StubConfirmableAuthenticationLog;
 use Spiriit\Bundle\Tests\Stubs\StubUser;
 
 final class ConfirmableAuthenticationLogTraitTest extends TestCase
@@ -61,6 +58,52 @@ final class ConfirmableAuthenticationLogTraitTest extends TestCase
         self::assertNotNull($log->respondedAt());
     }
 
+    public function testItShouldRevokeAPendingLogAndMakeItsTokenInert(): void
+    {
+        $log = $this->createConfirmableLog();
+        $log->enableConfirmation(new ConfirmationToken('the-token'));
+
+        $log->revoke();
+
+        self::assertSame(AuthenticationLogStatus::REVOKED, $log->status());
+        self::assertFalse($log->isPending());
+        self::assertNull($log->respondedAt());
+    }
+
+    public function testItShouldRevokeAnAcknowledgedLogWithoutTouchingItsResponseDate(): void
+    {
+        $log = $this->createConfirmableLog();
+        $log->enableConfirmation(new ConfirmationToken('the-token'));
+        $log->acknowledge();
+        $respondedAt = $log->respondedAt();
+
+        $log->revoke();
+
+        self::assertSame(AuthenticationLogStatus::REVOKED, $log->status());
+        self::assertSame($respondedAt, $log->respondedAt());
+    }
+
+    public function testItShouldNotDowngradeADisavowedLogToRevoked(): void
+    {
+        $log = $this->createConfirmableLog();
+        $log->enableConfirmation(new ConfirmationToken('the-token'));
+        $log->disavow();
+
+        $log->revoke();
+
+        self::assertSame(AuthenticationLogStatus::DISAVOWED, $log->status());
+    }
+
+    public function testItShouldRevokeIdempotently(): void
+    {
+        $log = $this->createConfirmableLog();
+        $log->revoke();
+
+        $log->revoke();
+
+        self::assertSame(AuthenticationLogStatus::REVOKED, $log->status());
+    }
+
     public function testItShouldRejectReviewingAnAlreadyReviewedLog(): void
     {
         $log = $this->createConfirmableLog();
@@ -83,17 +126,10 @@ final class ConfirmableAuthenticationLogTraitTest extends TestCase
         $log->enableConfirmation(new ConfirmationToken('another-token'));
     }
 
-    private function createConfirmableLog(): ConfirmableAuthenticationLogInterface&AbstractAuthenticationLog
+    private function createConfirmableLog(): StubConfirmableAuthenticationLog
     {
         $userInformation = new UserInformation('127.0.0.1', 'PHPUnit', new \DateTimeImmutable(), null);
 
-        return new class(new UserIdentity('user-1', StubUser::class), $userInformation) extends AbstractAuthenticationLog implements ConfirmableAuthenticationLogInterface {
-            use ConfirmableAuthenticationLogTrait;
-
-            public function getUser(): AuthLogUserInterface
-            {
-                throw new \RuntimeException('Stub');
-            }
-        };
+        return new StubConfirmableAuthenticationLog(new UserIdentity('user-1', StubUser::class), $userInformation);
     }
 }

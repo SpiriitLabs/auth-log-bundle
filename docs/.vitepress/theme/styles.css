@@ -1,13 +1,13 @@
-/* Brand colours derived from the Spiriit identity: #3960ff, with the
+/* Brand colours derived from the Spiriit identity: #3860F8, with the
    starburst accents (yellow, coral, green, purple) used by the artwork. */
 :root {
-  --vp-c-brand-1: #3960ff;
-  --vp-c-brand-2: #2f52e0;
-  --vp-c-brand-3: #3960ff;
-  --vp-c-brand-soft: rgba(57, 96, 255, 0.13);
+  --vp-c-brand-1: #3860F8;
+  --vp-c-brand-2: #4162E8;
+  --vp-c-brand-3: #3860F8;
+  --vp-c-brand-soft: rgba(56, 96, 248, 0.13);
 
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #3960ff 30%, #8b5cf6);
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #3860F8 30%, #A080F8);
 
   /* the hero artwork carries its own surface, so no coloured halo behind it */
   --vp-home-hero-image-background-image: none;
@@ -15,12 +15,12 @@
 }
 
 .dark {
-  --vp-c-brand-1: #93a9ff;
-  --vp-c-brand-2: #6b86ff;
-  --vp-c-brand-3: #3960ff;
-  --vp-c-brand-soft: rgba(107, 134, 255, 0.16);
+  --vp-c-brand-1: #92A8FB;
+  --vp-c-brand-2: #6A88FA;
+  --vp-c-brand-3: #3860F8;
+  --vp-c-brand-soft: rgba(106, 136, 250, 0.16);
 
-  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #6b86ff 30%, #a78bfa);
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #6A88FA 30%, #B399F9);
 }
 
 .VPHero .VPImage {

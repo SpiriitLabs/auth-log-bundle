@@ -10,15 +10,19 @@
 namespace Spiriit\Bundle\Tests\Integration\Stubs;
 
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogCreatorInterface;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\PasswordResetRequesterInterface;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\SessionInvalidatorInterface;
 use Spiriit\Bundle\AuthLogBundle\DTO\UserIdentity;
 use Spiriit\Bundle\AuthLogBundle\Entity\AbstractAuthenticationLog;
 use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogInterface;
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\UserInformation;
 use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotification;
 use Spiriit\Bundle\AuthLogBundle\Notification\NotificationInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\AuthenticationLogRepositoryInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\ConfirmableAuthenticationLogRepositoryInterface;
+use Spiriit\Bundle\AuthLogBundle\Repository\RevocableAuthenticationLogRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -40,6 +44,16 @@ class BundleExtension extends Extension
         $notification = new Definition(StubNotification::class);
         $notification->setPublic(true);
         $container->setDefinition('app.custom_notification', $notification);
+
+        $sessionInvalidator = new Definition(StubSessionInvalidator::class);
+        $sessionInvalidator->setPublic(true);
+        $sessionInvalidator->setAutoconfigured(true);
+        $container->setDefinition(StubSessionInvalidator::class, $sessionInvalidator);
+
+        $passwordResetRequester = new Definition(StubPasswordResetRequester::class);
+        $passwordResetRequester->setPublic(true);
+        $passwordResetRequester->setAutoconfigured(true);
+        $container->setDefinition(StubPasswordResetRequester::class, $passwordResetRequester);
     }
 }
 
@@ -49,7 +63,7 @@ class BundleExtension extends Extension
  *
  * @internal
  */
-class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInterface, ConfirmableAuthenticationLogRepositoryInterface
+class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInterface, ConfirmableAuthenticationLogRepositoryInterface, RevocableAuthenticationLogRepositoryInterface
 {
     public function save(AuthenticationLogInterface $log): void
     {
@@ -64,6 +78,10 @@ class StubAuthenticationLogRepository implements AuthenticationLogRepositoryInte
     {
         return null;
     }
+
+    public function revokeKnownContexts(UserIdentity $userIdentity): void
+    {
+    }
 }
 
 /**
@@ -74,7 +92,7 @@ class StubAuthenticationLogCreator implements AuthenticationLogCreatorInterface
     public function createLog(UserIdentity $userIdentity, UserInformation $userInformation): AuthenticationLogInterface
     {
         return new class($userIdentity, $userInformation) extends AbstractAuthenticationLog {
-            public function getUser(): \Spiriit\Bundle\AuthLogBundle\Entity\AuthLogUserInterface
+            public function getUser(): AuthLogUserInterface
             {
                 throw new \RuntimeException('Stub');
             }
@@ -88,6 +106,26 @@ class StubAuthenticationLogCreator implements AuthenticationLogCreatorInterface
 class StubNotification implements NotificationInterface
 {
     public function send(NewDeviceNotification $notification): void
+    {
+    }
+}
+
+/**
+ * @internal
+ */
+class StubSessionInvalidator implements SessionInvalidatorInterface
+{
+    public function invalidateSessions(AuthLogUserInterface $user): void
+    {
+    }
+}
+
+/**
+ * @internal
+ */
+class StubPasswordResetRequester implements PasswordResetRequesterInterface
+{
+    public function requestPasswordReset(AuthLogUserInterface $user): void
     {
     }
 }

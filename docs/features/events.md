@@ -28,10 +28,14 @@ Persistence and notification are handled automatically by the bundle. You do **n
 
 ## Available events
 
-| Constant | Dispatched when | Event class |
+All constants live on `AuthenticationLogEvents`.
+
+| Constant | Event class | Dispatched when |
 |---|---|---|
-| `AuthenticationLogEvents::NEW_DEVICE` | a login from an unknown context is detected | `AuthenticationLogEvent` |
-| `AuthenticationLogEvents::LOGIN_ACKNOWLEDGED` | the user confirms the login was theirs | `AuthenticationLogConfirmationEvent` |
-| `AuthenticationLogEvents::LOGIN_DISAVOWED` | the user reports the login was not theirs | `AuthenticationLogConfirmationEvent` |
+| `NEW_DEVICE` | `AuthenticationLogEvent` | a login from an unknown context is detected |
+| `LOGIN_ACKNOWLEDGED` | `AuthenticationLogConfirmationEvent` | the user confirms the login was theirs |
+| `LOGIN_DISAVOWED` | `AuthenticationLogConfirmationEvent` | the user reports the login was not theirs |
 
 The last two require the [login confirmation](/features/login-confirmation) feature.
+
+`LOGIN_DISAVOWED` is dispatched **after** the configured [disavowal reactions](/features/disavowal-reactions) have run — when your listener receives it, the built-in protections are already in place.

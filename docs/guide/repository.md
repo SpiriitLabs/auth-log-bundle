@@ -1,11 +1,11 @@
 # Repository
 
-Your repository must implement two interfaces:
+Your repository implements two interfaces:
 
-- `AuthenticationLogRepositoryInterface` — check if a log already exists and save new logs
-- `AuthenticationLogCreatorInterface` — build the log entity from a user identity and user information
+- `AuthenticationLogRepositoryInterface` — tell whether a log already exists, and save new ones
+- `AuthenticationLogCreatorInterface` — build the log entity
 
-A [`UserIdentity`](#useridentity) carries both the user identifier and the user class (FQCN). Keep the class in the lookup: two accounts of different classes may share the same identifier.
+Both receive a `UserIdentity`, a `final readonly` DTO carrying `userIdentifier` (what `UserInterface::getUserIdentifier()` returns) and `userClass` (the FQCN, resolved through Doctrine proxies). Keep the class in the lookup: two accounts of different classes may share the same identifier.
 
 ```php
 use Doctrine\ORM\EntityRepository;
@@ -61,18 +61,22 @@ class UserAuthLogRepository extends EntityRepository implements
 ```
 
 ::: tip That's it!
-The bundle automatically listens to `LoginSuccessEvent`, checks if the login context is known, persists the log, and sends a notification email when a new context is detected.
+The bundle listens to `LoginSuccessEvent`, checks whether the context is known, persists the log and sends the notification on its own.
 :::
-
-## UserIdentity
-
-`UserIdentity` is a `final readonly` DTO with two public properties:
-
-| Property | Type | Description |
-|---|---|---|
-| `userIdentifier` | `string` | what `UserInterface::getUserIdentifier()` returns |
-| `userClass` | `string` | the user's FQCN, resolved through Doctrine proxies |
 
 ## Defining a "known context"
 
-`findExistingLog()` is what defines a known context for your application. The example above matches on the identity and the IP address — widen it to the user agent or the location if you want a stricter definition.
+`findExistingLog()` is what defines a known context for your application. The example above matches the identity and the IP address — widen it to the user agent or the location for a stricter definition.
+
+With [login confirmation](/features/login-confirmation) enabled, also exclude the logs the user disavowed and those revoked by the [disavowal reactions](/features/disavowal-reactions) — otherwise a reported context would still count as known and silence future alerts:
+
+```php
+use Spiriit\Bundle\AuthLogBundle\Entity\AuthenticationLogStatus;
+
+return null !== $this->findOneBy([
+    'user' => $user,
+    'userClass' => $userIdentity->userClass,
+    'ipAddress' => $userInformation->ipAddress,
+    'status' => [AuthenticationLogStatus::PENDING, AuthenticationLogStatus::ACKNOWLEDGED],
+]);
+```

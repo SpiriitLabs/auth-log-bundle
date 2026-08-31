@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Spiriit\Bundle\AuthLogBundle\Controller;
 
 use Spiriit\Bundle\AuthLogBundle\Confirmation\ConfirmationAction;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\DisavowalReactionExecutor;
 use Spiriit\Bundle\AuthLogBundle\Entity\ConfirmableAuthenticationLogInterface;
 use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogConfirmationEvent;
 use Spiriit\Bundle\AuthLogBundle\Listener\AuthenticationLogEvents;
@@ -29,6 +30,7 @@ final readonly class AuthenticationLogConfirmationController
         private ConfirmableAuthenticationLogRepositoryInterface $confirmableAuthenticationLogRepository,
         private EventDispatcherInterface $eventDispatcher,
         private Environment $twig,
+        private ?DisavowalReactionExecutor $disavowalReactionExecutor = null,
     ) {
     }
 
@@ -69,6 +71,10 @@ final readonly class AuthenticationLogConfirmationController
         };
 
         $this->confirmableAuthenticationLogRepository->save($authenticationLog);
+
+        if (ConfirmationAction::DISAVOW === $action) {
+            $this->disavowalReactionExecutor?->execute($authenticationLog);
+        }
 
         $this->eventDispatcher->dispatch(
             new AuthenticationLogConfirmationEvent($authenticationLog),

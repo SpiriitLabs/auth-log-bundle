@@ -12,8 +12,11 @@ declare(strict_types=1);
 namespace Spiriit\Bundle\AuthLogBundle\DependencyInjection\Compiler;
 
 use Spiriit\Bundle\AuthLogBundle\AuthenticationLog\AuthenticationLogCreatorInterface;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\PasswordResetRequesterInterface;
+use Spiriit\Bundle\AuthLogBundle\Disavowal\SessionInvalidatorInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\AuthenticationLogRepositoryInterface;
 use Spiriit\Bundle\AuthLogBundle\Repository\ConfirmableAuthenticationLogRepositoryInterface;
+use Spiriit\Bundle\AuthLogBundle\Repository\RevocableAuthenticationLogRepositoryInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -28,6 +31,9 @@ final class RegisterTaggedImplementationsPass implements CompilerPassInterface
         'spiriit_auth_log.repository' => AuthenticationLogRepositoryInterface::class,
         'spiriit_auth_log.creator' => AuthenticationLogCreatorInterface::class,
         'spiriit_auth_log.confirmable_repository' => ConfirmableAuthenticationLogRepositoryInterface::class,
+        'spiriit_auth_log.revocable_repository' => RevocableAuthenticationLogRepositoryInterface::class,
+        'spiriit_auth_log.session_invalidator' => SessionInvalidatorInterface::class,
+        'spiriit_auth_log.password_reset_requester' => PasswordResetRequesterInterface::class,
     ];
 
     public function process(ContainerBuilder $container): void

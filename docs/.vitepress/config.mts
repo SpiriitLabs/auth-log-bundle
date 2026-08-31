@@ -1,4 +1,13 @@
 import { defineConfig } from 'vitepress'
+import { execSync } from 'node:child_process'
+
+function bundleVersion(): string {
+  try {
+    return execSync('git describe --tags --abbrev=0', { encoding: 'utf8' }).trim()
+  } catch {
+    return 'Links'
+  }
+}
 
 export default defineConfig({
   title: 'Auth Log Bundle',
@@ -17,9 +26,9 @@ export default defineConfig({
       { text: 'Security', link: '/owasp' },
       { text: 'Features', link: '/features/geolocation' },
       { text: 'Advanced', link: '/advanced/custom-notification' },
-      { text: 'Upgrade', link: '/upgrade/3.0' },
+      { text: 'Upgrade', link: '/upgrade/4.0' },
       {
-        text: 'Links',
+        text: bundleVersion(),
         items: [
           { text: 'Packagist', link: 'https://packagist.org/packages/spiriitlabs/auth-log-bundle' },
           { text: 'Changelog', link: 'https://github.com/SpiriitLabs/auth-log-bundle/releases' },
@@ -39,6 +48,7 @@ export default defineConfig({
         items: [
           { text: 'Installation', link: '/guide/installation' },
           { text: 'Configuration', link: '/guide/configuration' },
+          { text: 'Supported login types', link: '/guide/supported-authentication' },
           { text: 'User entity', link: '/guide/user-entity' },
           { text: 'Log entity', link: '/guide/log-entity' },
           { text: 'Repository', link: '/guide/repository' },
@@ -51,6 +61,7 @@ export default defineConfig({
           { text: 'Async with Messenger', link: '/features/messenger' },
           { text: 'Events', link: '/features/events' },
           { text: 'Login confirmation', link: '/features/login-confirmation' },
+          { text: 'Disavowal reactions', link: '/features/disavowal-reactions' },
         ],
       },
       {
@@ -65,6 +76,7 @@ export default defineConfig({
       {
         text: 'Upgrade',
         items: [
+          { text: '3.x to 4.0', link: '/upgrade/4.0' },
           { text: '2.x to 3.0', link: '/upgrade/3.0' },
           { text: '1.x to 2.0', link: '/upgrade/2.0' },
         ],

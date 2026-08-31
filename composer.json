@@ -42,6 +42,7 @@
     },
     "require": {
         "php": ">=8.2",
+        "psr/log": "^2.0 || ^3.0",
         "doctrine/orm": "3.* || ^4.0",
         "doctrine/persistence": "^3.0 || ^4.0",
         "symfony/config": "^6.4|^7.4|^8.0",
