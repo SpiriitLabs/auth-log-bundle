@@ -25,6 +25,7 @@ export default defineConfig({
   head: [
     ['link', { rel: 'icon', href: '/auth-log-bundle/favicon.svg', type: 'image/svg+xml' }],
     ['link', { rel: 'apple-touch-icon', href: '/auth-log-bundle/apple-touch-icon.png', sizes: '180x180' }],
+    ['meta', { name: 'google-site-verification', content: 'Mo1IuvBvHPBD6BpU6F2Obspy8c9Hl7r_2JjILEYjvMc' }],
   ],
   transformPageData(pageData, { siteConfig }) {
     const { title: siteTitle, description: siteDescription } = siteConfig.site
