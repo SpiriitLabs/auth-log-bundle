@@ -1,3 +1,7 @@
+---
+description: "Every authenticator built on Symfony's LoginSuccessEvent works with nothing to configure: form_login, json_login, login_link, JWT, API Platform."
+---
+
 # Supported login types
 
 The bundle hooks into a single extension point: Symfony's [`LoginSuccessEvent`](https://symfony.com/doc/current/security.html#authentication-events). The authenticator manager dispatches it on **every successful authentication, whatever the authenticator** — so any login mechanism built on the authenticator system works, with nothing to configure.

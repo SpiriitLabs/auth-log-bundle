@@ -1,3 +1,7 @@
+---
+description: "Override the default Twig template of the new-device alert email, with the list of variables available inside it."
+---
+
 # Custom email template
 
 You can override the default email template:

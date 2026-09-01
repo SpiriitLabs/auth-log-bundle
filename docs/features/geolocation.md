@@ -1,3 +1,7 @@
+---
+description: "Enrich each log with city, country and coordinates, using a local MaxMind GeoIP2 database or the IP API service."
+---
+
 # Geolocation
 
 Geolocation enriches each log with a city, country, latitude and longitude. Two providers are available.

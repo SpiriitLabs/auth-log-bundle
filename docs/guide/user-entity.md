@@ -1,3 +1,7 @@
+---
+description: "Implement AuthLogUserInterface on your User entity to tell the bundle where to send the alert and how to address the user."
+---
+
 # User entity
 
 Implement `AuthLogUserInterface` on your User entity. It tells the bundle where to send the alert and how to address the user.

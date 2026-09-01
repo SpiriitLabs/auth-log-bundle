@@ -1,3 +1,7 @@
+---
+description: "Act when a user reports a login was not theirs: revoke known contexts, invalidate sessions, force a password reset, or add your own reaction."
+---
+
 # Disavowal reactions
 
 When a user clicks **"It wasn't me"**, recording the incident is not enough — something should *happen*. The bundle executes a set of **reactions** at that moment, each enabled by configuration, before dispatching `LOGIN_DISAVOWED`.

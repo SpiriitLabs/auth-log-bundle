@@ -1,3 +1,5 @@
+<img src="docs/public/og-image.png" alt="authlog, a Symfony bundle by SpiriitLabs" width="640">
+
 # SpiriitLabs Auth Log Bundle
 
 With this Symfony bundle you can send an email alert when a user logs in from a new context — for example:
@@ -8,11 +10,14 @@ With this Symfony bundle you can send an email alert when a user logs in from a 
 
 This helps detect unusual login activity early and increases visibility into authentication events.
 
+[![Documentation](https://img.shields.io/badge/docs-online-brightgreen.svg)](https://spiriitlabs.github.io/auth-log-bundle/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PHP Version](https://img.shields.io/badge/php-8.2%2B-blue.svg)](https://php.net)
 [![Symfony](https://img.shields.io/badge/symfony-6.4%2B%7C7.4%2B%7C8.0%2B-blue.svg)](https://symfony.com)
 [![Latest Stable Version](https://poser.pugx.org/spiriitlabs/auth-log-bundle/v/stable.svg)](https://packagist.org/packages/spiriitlabs/auth-log-bundle)
 [![CI Tests](https://github.com/SpiriitLabs/auth-log-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/SpiriitLabs/auth-log-bundle/actions/workflows/ci.yml)
+
+> 📖 **[Read the full documentation](https://spiriitlabs.github.io/auth-log-bundle/)** — installation, configuration, geolocation providers, async processing, events and customization.
 
 > **Upgrading from v1?** See the [UPGRADE.md](UPGRADE.md) guide for a step-by-step migration.
 

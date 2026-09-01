@@ -1,3 +1,7 @@
+---
+description: "How authentication logging answers OWASP A09:2021 and A07:2021 — the rationale, the design decisions, and what this bundle is not."
+---
+
 # Security & OWASP
 
 Authentication logging is the control that turns a silent account takeover into an incident somebody can see — and, when the user is notified, into one they can stop themselves.

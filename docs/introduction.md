@@ -1,3 +1,7 @@
+---
+description: "A Symfony bundle that logs every successful login and emails the user when the context changes — new IP address, location or device."
+---
+
 # What is Auth Log Bundle?
 
 This Symfony bundle emails an alert when a user logs in from a new context — a different IP address, a different location, or a different device.

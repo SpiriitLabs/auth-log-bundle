@@ -1,3 +1,7 @@
+---
+description: "The internal flow from Symfony's LoginSuccessEvent to the persisted log and the notification, and the extension points along the way."
+---
+
 # Architecture
 
 Internal flow when a user logs in:

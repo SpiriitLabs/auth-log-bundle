@@ -1,3 +1,7 @@
+---
+description: "Listen to the NEW_DEVICE event to run your own processing — logging, analytics, alerting — when an unknown login context is detected."
+---
+
 # Events
 
 When a new device/context is detected, the bundle dispatches a `AuthenticationLogEvents::NEW_DEVICE` event. You can listen to it for custom processing (logging, analytics, etc.):

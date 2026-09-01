@@ -1,3 +1,7 @@
+---
+description: "Run the test suite, code style checks and static analysis — the bundle enforces 100% line coverage in CI."
+---
+
 # Testing
 
 The bundle ships with a full test suite and enforces 100% line coverage in CI.

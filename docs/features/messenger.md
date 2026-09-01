@@ -1,3 +1,7 @@
+---
+description: "Move geolocation lookups and email sending out of the request with Symfony Messenger, so login responses stay fast."
+---
+
 # Async with Messenger
 
 By default the login is processed synchronously, inside the request. Geolocation lookups and email sending then add latency to the login response. Symfony Messenger moves that work out of the request.

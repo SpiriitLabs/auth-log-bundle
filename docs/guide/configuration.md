@@ -1,3 +1,7 @@
+---
+description: "Configure spiriit_auth_log — sender identity for alert emails, geolocation provider, Messenger bus — with the full option reference."
+---
+
 # Configuration
 
 Create the bundle configuration file and set the sender identity used for notification emails:

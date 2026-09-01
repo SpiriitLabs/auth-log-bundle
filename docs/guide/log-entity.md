@@ -1,3 +1,7 @@
+---
+description: "Extend AbstractAuthenticationLog to persist authentication logs with Doctrine, including the case of several User classes."
+---
+
 # Log entity
 
 Extend `AbstractAuthenticationLog` and add a relation to your User entity:

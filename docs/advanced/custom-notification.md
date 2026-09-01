@@ -1,3 +1,7 @@
+---
+description: "Replace the default email alert with Slack, SMS or any other transport by implementing NotificationInterface."
+---
+
 # Custom notification
 
 The bundle sends email alerts through Symfony Mailer. For another transport — Slack, SMS… — implement `NotificationInterface` and register it as a service:

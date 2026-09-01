@@ -2,6 +2,7 @@
     "name": "spiriitlabs/auth-log-bundle",
     "description": "Symfony authentication audit log with geolocation, device detection and security notifications",
     "type": "symfony-bundle",
+    "homepage": "https://spiriitlabs.github.io/auth-log-bundle/",
     "license": "MIT",
     "keywords": [
         "symfony",
@@ -27,6 +28,11 @@
             "email": "dev@spiriit.com"
         }
     ],
+    "support": {
+        "docs": "https://spiriitlabs.github.io/auth-log-bundle/",
+        "issues": "https://github.com/SpiriitLabs/auth-log-bundle/issues",
+        "source": "https://github.com/SpiriitLabs/auth-log-bundle"
+    },
     "autoload": {
         "psr-4": {
             "Spiriit\\Bundle\\AuthLogBundle\\": "src/"

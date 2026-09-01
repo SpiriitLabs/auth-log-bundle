@@ -1,3 +1,7 @@
+---
+description: "Install spiriitlabs/auth-log-bundle with Composer, and register it manually if you are not using Symfony Flex."
+---
+
 # Installation
 
 Install the bundle with Composer:

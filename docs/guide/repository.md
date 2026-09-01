@@ -1,3 +1,7 @@
+---
+description: "Implement two interfaces in your Doctrine repository to persist logs and define what counts as a known login context."
+---
+
 # Repository
 
 Your repository implements two interfaces:

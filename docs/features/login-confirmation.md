@@ -1,3 +1,7 @@
+---
+description: "Add signed, single-use links to the alert email so users can confirm a login was theirs — or report that it wasn't — without signing in."
+---
+
 # Login confirmation
 
 This optional feature adds two **signed links** to the notification email, so the user can confirm the login was theirs — or report that it wasn't — from any device, without being logged in.
