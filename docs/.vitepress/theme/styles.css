@@ -160,3 +160,133 @@
   font-size: 14px;
   color: var(--vp-c-text-2);
 }
+
+/* News index: one entry per release announcement */
+.news-list {
+  margin-top: 40px;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.news-item {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.news-item-date {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc .news-item-title {
+  margin: 10px 0 0;
+  border-top: 0;
+  padding-top: 0;
+  font-size: 22px;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+}
+
+.vp-doc .news-item-title a {
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  text-decoration: none;
+  transition: color 0.25s;
+}
+
+.vp-doc .news-item-title a:hover {
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc .news-item-description {
+  margin: 10px 0 0;
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc .news-item-cta {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Announcement cards: one config key per row, so a long interface name still fits on one line */
+.reaction-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.reaction-card {
+  padding: 18px 20px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background-color: var(--vp-c-bg-soft);
+  transition: border-color 0.25s;
+}
+
+.reaction-card:hover {
+  border-color: var(--vp-c-brand-soft);
+}
+
+.reaction-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.vp-doc .reaction-card-name {
+  padding: 0;
+  background-color: transparent;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc .reaction-card-name::before,
+.vp-doc .reaction-card-name::after,
+.vp-doc .reaction-card-port code::before,
+.vp-doc .reaction-card-port code::after {
+  content: none;
+}
+
+.reaction-card-badge {
+  padding: 2px 9px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--vp-c-text-2);
+}
+
+.reaction-card-badge.is-default {
+  border-color: transparent;
+  background-color: var(--vp-c-brand-3);
+  color: #fff;
+}
+
+.vp-doc .reaction-card-text {
+  margin: 10px 0 0;
+  line-height: 1.6;
+}
+
+.vp-doc .reaction-card-port {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--vp-c-text-3);
+}
+
+.vp-doc .reaction-card-port code {
+  padding: 0;
+  background-color: transparent;
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+  overflow-wrap: anywhere;
+}
