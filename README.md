@@ -27,13 +27,13 @@ To ensure strong authentication security, this bundle aligns with guidance from 
 
 * Treating authentication failures or unusual logins as events worthy of detection and alerting
 * Ensuring all login events are logged, especially when the context changes (IP, location, device)
-* Using secure channels (TLS) for all authentication-related operations
+* Using secure channels (TLS) for all authentication-related operations — the optional `ipApi` geolocation provider is the one exception, and is documented as development-only
 * Validating and normalizing incoming data (e.g. user agent strings, IP addresses) to avoid ambiguity or spoofing
 
 ## Features
 
 - **Authentication Event Logging**: Track successful logins with IP, user agent, timestamp and location
-- **Geolocation Support**: Enrich logs with location data using GeoIP2 or IP API
+- **Geolocation Support**: Enrich logs with location data using a local GeoIP2 database (recommended) or the IP API service
 - **Email Notifications**: Automatically alert users when a login from an unknown context is detected
 - **Messenger Integration**: Optional async processing with Symfony Messenger
 - **Repository-Based Persistence**: No factory or listener boilerplate — implement two interfaces in your repository and you're done
@@ -178,7 +178,7 @@ That's it! The bundle automatically listens to `LoginSuccessEvent`, checks if th
 
 ### Geolocation
 
-**GeoIP2** (local database):
+**GeoIP2** (local database) — recommended in production, no outbound call:
 ```yaml
 spiriit_auth_log:
     location:
@@ -186,12 +186,14 @@ spiriit_auth_log:
         geoip2_database_path: '%kernel.project_dir%/var/GeoLite2-City.mmdb'
 ```
 
-**IP API** (external API, 45 req/min free):
+**IP API** (external API, 45 req/min free) — development only:
 ```yaml
 spiriit_auth_log:
     location:
         provider: 'ipApi'
 ```
+
+> ⚠️ **`ipApi` sends the user's IP address to a third party in clear text.** The free tier of ip-api.com exposes no HTTPS endpoint (only the paid `pro.ip-api.com` does), so the call is made over plain `http://`: the IP address of every authenticated user — personal data — is transmitted unencrypted to a third party you have no contract with, and the response is trusted as-is, so traffic tampering can display a fake location in the alert email. Keep it for development, use `geoip2` in production, and declare the transfer in your record of processing activities if you use it anyway — see [Geolocation](https://spiriitlabs.github.io/auth-log-bundle/features/geolocation).
 
 ### Messenger (async processing)
 

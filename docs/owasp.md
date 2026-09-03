@@ -32,6 +32,7 @@ The last row matters most in practice. Security teams rarely have the capacity t
 * **Signed, single-use, expiring links.** Replaying a used link shows an "already handled" page instead of acting twice.
 * **No action from a link preview.** Clicking opens an intermediate page whose button issues a `POST`, so email scanners that follow every URL cannot answer on the user's behalf.
 * **Identity, not just an identifier.** Logs record the user class alongside the identifier, so two accounts of different classes are never conflated.
+* **No outbound call by default.** Geolocation is off unless you configure a provider, and the recommended one (`geoip2`) resolves the IP against a local database. The `ipApi` provider is the exception — it sends the user's IP to a third party in clear text and trusts the reply, so it is [documented as development-only](/features/geolocation).
 * **Sensible defaults, no surprises.** Disavowal revokes the user's known contexts; invalidating sessions or forcing a password reset stays [opt-in](/features/disavowal-reactions).
 
 ## What this bundle is not
