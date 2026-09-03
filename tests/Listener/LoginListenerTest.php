@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of the spiriitlabs/auth-log-bundle package.
  * Copyright (c) SpiriitLabs <https://www.spiriit.com/>
@@ -38,7 +36,7 @@ class LoginListenerTest extends TestCase
 {
     private function createLoginSuccessEvent(UserInterface $user, Request $request): LoginSuccessEvent
     {
-        $passport = new SelfValidatingPassport(new UserBadge($user->getUserIdentifier(), fn () => $user));
+        $passport = new SelfValidatingPassport(new UserBadge($user->getUserIdentifier(), static fn () => $user));
         $token = new PostAuthenticationToken($user, 'main', []);
 
         return new LoginSuccessEvent(
