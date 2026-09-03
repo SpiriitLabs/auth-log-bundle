@@ -5,5 +5,8 @@ parameters:
 		- tests
 	excludePaths:
 		- config
+	scanDirectories:
+		# PHPUnit est téléchargé par symfony/phpunit-bridge, jamais installé dans vendor
+		- vendor/bin/.phpunit/phpunit
 	ignoreErrors:
 		- '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface::#'
