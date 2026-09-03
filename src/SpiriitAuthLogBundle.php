@@ -33,6 +33,7 @@ use Spiriit\Bundle\AuthLogBundle\Repository\ConfirmableAuthenticationLogReposito
 use Spiriit\Bundle\AuthLogBundle\Repository\RevocableAuthenticationLogRepositoryInterface;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\Reference;
@@ -296,6 +297,7 @@ final class SpiriitAuthLogBundle extends AbstractBundle
             $container->setDefinition('spiriit_auth_log.fetch_user_information_method', new Definition(FetchUserInformationMethodInterface::class))
                 ->setClass(IpApiLocateMethod::class)
                 ->setArgument('$httpClient', new Reference('spiriit_auth_log.http_client'))
+                ->setArgument('$logger', new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE))
                 ->setPublic(true);
         } elseif (Geoip2LocateMethod::class === $class) {
             $container->setDefinition('spiriit_auth_log.fetch_user_information_method', new Definition(FetchUserInformationMethodInterface::class))

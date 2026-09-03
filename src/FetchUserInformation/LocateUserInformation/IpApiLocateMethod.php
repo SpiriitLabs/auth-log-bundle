@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Spiriit\Bundle\AuthLogBundle\FetchUserInformation\LocateUserInformation;
 
+use Psr\Log\LoggerInterface;
 use Spiriit\Bundle\AuthLogBundle\FetchUserInformation\FetchUserInformationMethodInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -21,30 +22,41 @@ class IpApiLocateMethod implements FetchUserInformationMethodInterface
 {
     public const SUCCESS = 'success';
 
-    public function __construct(private readonly HttpClientInterface $httpClient)
-    {
+    public function __construct(
+        private readonly HttpClientInterface $httpClient,
+        private readonly ?LoggerInterface $logger = null,
+    ) {
     }
 
     public function locate(string $ipAddress): ?LocateValues
     {
-        $response = $this->httpClient->request('GET', 'http://ip-api.com/json/'.$ipAddress);
+        try {
+            $response = $this->httpClient->request('GET', 'http://ip-api.com/json/'.$ipAddress);
 
-        if (200 !== $response->getStatusCode()) {
+            if (200 !== $response->getStatusCode()) {
+                return null;
+            }
+
+            $data = $response->toArray();
+
+            if (self::SUCCESS !== ($data['status'] ?? null)) {
+                return null;
+            }
+
+            return new LocateValues(
+                country: $data['country'],
+                country_code: $data['countryCode'],
+                city: $data['city'],
+                latitude: $data['lat'],
+                longitude: $data['lon']
+            );
+        } catch (\Throwable $exception) {
+            $this->logger?->warning('IP geolocation failed: {message}', [
+                'message' => $exception->getMessage(),
+                'exception' => $exception,
+            ]);
+
             return null;
         }
-
-        $data = $response->toArray();
-
-        if (self::SUCCESS !== $data['status']) {
-            return null;
-        }
-
-        return new LocateValues(
-            country: $data['country'],
-            country_code: $data['countryCode'],
-            city: $data['city'],
-            latitude: $data['lat'],
-            longitude: $data['lon']
-        );
     }
 }
