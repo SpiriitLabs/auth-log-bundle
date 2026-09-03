@@ -36,7 +36,7 @@ spiriit_auth_log:
         sender_name: 'Your App Security'          # required
 
     location:
-        provider: null                # 'ipApi', 'geoip2' or null
+        provider: null                # 'geoip2' (recommended), 'ipApi' (development only) or null
         geoip2_database_path: null    # required with the 'geoip2' provider
 
     confirmation:
@@ -50,6 +50,10 @@ spiriit_auth_log:
 ```
 
 `location` can be omitted entirely — geolocation is then disabled.
+
+::: warning Pick `geoip2` in production
+The `ipApi` provider sends the user's IP address to a third party over unencrypted HTTP, and trusts the answer it gets back. See [Geolocation](/features/geolocation) before enabling it outside development.
+:::
 
 ## Validation rules
 

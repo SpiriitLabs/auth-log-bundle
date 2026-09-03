@@ -28,7 +28,7 @@ features:
     linkText: Why it matters
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>'
     title: Geolocation support
-    details: Enrich logs with a city and country, using a local GeoIP2 database or the IP API service.
+    details: Enrich logs with a city and country from a local GeoIP2 database — no outbound call, nothing to leak.
     link: /features/geolocation
     linkText: Pick a provider
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7.5 8.5 6 8.5-6"/></svg>'
@@ -70,7 +70,8 @@ spiriit_auth_log:
         sender_email: 'no-reply@yourdomain.com'
         sender_name: 'Security'
     location:
-        provider: 'ipApi'
+        provider: 'geoip2'
+        geoip2_database_path: '%kernel.project_dir%/var/GeoLite2-City.mmdb'
 ```
 
 </div>

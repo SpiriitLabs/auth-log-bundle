@@ -15,7 +15,7 @@ Recording that change is what turns a silent account takeover into an incident s
 | PHP | 8.2 or higher |
 | Symfony | 6.4, 7.4 or 8.0 |
 | Doctrine ORM | 3.x or 4.x |
-| geoip2/geoip2 | optional, only for local geolocation |
+| geoip2/geoip2 | optional, for local geolocation — the [recommended provider](/features/geolocation) in production |
 
 ::: tip Already using the bundle?
 The [upgrade guides](/upgrade/4.0) cover each major version step by step.
