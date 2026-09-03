@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of the spiriitlabs/auth-log-bundle package.
  * Copyright (c) SpiriitLabs <https://www.spiriit.com/>

@@ -104,3 +104,45 @@ jobs:
             echo "::error::Code coverage is ${COVERAGE}%, but 100% is required."
             exit 1
           fi
+
+  quality:
+    runs-on: ubuntu-latest
+    name: "Static Analysis & Code Style"
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v7"
+        with:
+          fetch-depth: 2
+
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: curl,mbstring
+          ini-values: date.timezone="Europe/Paris"
+          coverage: none
+          tools: "composer:v2,flex"
+
+      - name: "Cache Composer packages"
+        uses: "actions/cache@v6"
+        with:
+          path: "~/.composer/cache"
+          key: "quality-php-8.4-composer-${{ hashFiles('composer.json') }}"
+          restore-keys: "quality-php-"
+
+      - name: "Install dependencies"
+        run: "composer update --prefer-dist"
+        env:
+          SYMFONY_REQUIRE: "7.4.*"
+
+      - name: "Install PHPUnit"
+        run: "vendor/bin/simple-phpunit install"
+
+      - name: "Run PHPStan"
+        run: "vendor/bin/phpstan analyse --no-progress --error-format=github"
+
+      - name: "Check code style"
+        run: "composer cs-check"
+
+      - name: "Audit dependencies for known vulnerabilities"
+        run: "composer audit --abandoned=report"

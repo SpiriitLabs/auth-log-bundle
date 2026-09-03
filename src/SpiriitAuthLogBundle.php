@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of the spiriitlabs/auth-log-bundle package.
  * Copyright (c) SpiriitLabs <https://www.spiriit.com/>
@@ -108,7 +106,7 @@ final class SpiriitAuthLogBundle extends AbstractBundle
                         ->end()
                     ->end()
                     ->validate()
-                        ->ifTrue(function ($v): bool {
+                        ->ifTrue(static function ($v): bool {
                             return null !== $v && ($v['provider'] ?? null) === 'geoip2' && empty($v['geoip2_database_path']);
                         })
                         ->thenInvalid('The "geoip2_database_path" field is required when using the "geoip2" provider.')
