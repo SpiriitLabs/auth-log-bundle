@@ -35,7 +35,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class SpiriitAuthLogBundle extends AbstractBundle
 {
@@ -292,6 +294,11 @@ final class SpiriitAuthLogBundle extends AbstractBundle
         };
 
         if (IpApiLocateMethod::class === $class) {
+            $container->setDefinition('spiriit_auth_log.http_client', new Definition(HttpClientInterface::class))
+                ->setFactory([HttpClient::class, 'create'])
+                ->setArguments([['timeout' => 2, 'max_duration' => 4]])
+                ->addTag('http_client.client');
+
             $container->setDefinition('spiriit_auth_log.fetch_user_information_method', new Definition(FetchUserInformationMethodInterface::class))
                 ->setClass(IpApiLocateMethod::class)
                 ->setArgument('$httpClient', new Reference('spiriit_auth_log.http_client'))

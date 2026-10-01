@@ -1,6 +1,7 @@
 framework:
     test: true
     secret: secret
+    messenger: ~
     translator:
         default_path: 'translations'
 

@@ -14,9 +14,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use Spiriit\Bundle\AuthLogBundle\Listener\LoginListener;
 use Spiriit\Bundle\AuthLogBundle\Notification\NewDeviceNotifier;
 use Spiriit\Bundle\AuthLogBundle\Services\LoginService;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 return static function (ContainerConfigurator $container): void {
     $services = $container->services();
@@ -43,9 +41,4 @@ return static function (ContainerConfigurator $container): void {
             'event' => LoginSuccessEvent::class,
             'method' => 'onLogin',
         ]);
-
-    $services->set('spiriit_auth_log.http_client', HttpClientInterface::class)
-        ->factory([HttpClient::class, 'create'])
-        ->args([['timeout' => 2, 'max_duration' => 4]])
-        ->tag('http_client.client');
 };
