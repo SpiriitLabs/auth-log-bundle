@@ -34,12 +34,12 @@ final readonly class AuthenticationLogConfirmationController
 
     public function __invoke(Request $request, ConfirmationAction $action, string $token): Response
     {
-        if (!$this->uriSigner->checkRequest($request)) {
-            return $this->render('invalid', Response::HTTP_FORBIDDEN);
-        }
-
         if ($this->isExpired($request)) {
             return $this->render('expired', Response::HTTP_FORBIDDEN);
+        }
+
+        if (!$this->uriSigner->checkRequest($request)) {
+            return $this->render('invalid', Response::HTTP_FORBIDDEN);
         }
 
         $authenticationLog = $this->confirmableAuthenticationLogRepository->findOneByConfirmationToken($token);

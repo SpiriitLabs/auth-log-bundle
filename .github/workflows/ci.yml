@@ -23,6 +23,7 @@ jobs:
           - { php: 8.2, symfony: "6.4.*", composer-flags: '--prefer-dist' }
           - { php: 8.2, symfony: "7.4.*", composer-flags: '--prefer-dist' }
           - { php: 8.4, symfony: "8.0.*", composer-flags: '--prefer-dist' }
+          - { php: 8.5, symfony: "8.2.*", composer-flags: '--prefer-dist', stability: beta }
 
     steps:
       - name: "Checkout"
@@ -48,6 +49,10 @@ jobs:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php }}-symfony-${{ matrix.symfony }}-composer-${{ hashFiles('composer.json') }}-flags-${{ matrix.composer-flags }}"
           restore-keys: "php-"
+
+      - name: "Allow pre-release dependencies"
+        if: matrix.stability
+        run: "composer config minimum-stability ${{ matrix.stability }}"
 
       - name: "Install dependencies"
         run: "composer update ${{ matrix.composer-flags }} --prefer-dist"

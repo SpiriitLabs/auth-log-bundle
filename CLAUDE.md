@@ -12,15 +12,10 @@ Symfony bundle pour détecter et logger les activités d'authentification inhabi
 ## Commandes utiles
 
 ```bash
-composer test        # Lancer les tests (PHPUnit via Symfony Bridge)
-composer cs-check    # Vérifier le code style (PHP-CS-Fixer, dry-run)
-composer cs-fix      # Corriger le code style
-```
-
-PHPStan n'a pas de script composer dédié :
-
-```bash
-vendor/bin/phpstan analyse
+make help       # Liste des cibles
+make test       # PHPUnit via Symfony Bridge
+make quality    # PHPStan + code style
+make cs-fix     # Corriger le code style
 ```
 
 ## Architecture
@@ -60,10 +55,11 @@ src/
 
 ## CI / Matrice de tests
 
-GitHub Actions teste 3 combinaisons :
+GitHub Actions teste 4 combinaisons :
 - PHP 8.2 + Symfony 6.4
 - PHP 8.2 + Symfony 7.4
 - PHP 8.4 + Symfony 8.0
+- PHP 8.5 + Symfony 8.2 (`minimum-stability: beta` tant que 8.2.0 n'est pas sorti)
 
 ## Conventions
 

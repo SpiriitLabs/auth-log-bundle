@@ -252,9 +252,10 @@ final class AuthenticationLogConfirmationControllerTest extends TestCase
     private function signedRequest(string $action, string $token, string $method, ?int $expires = null): Request
     {
         $uriSigner = new UriSigner(self::SECRET);
-        $url = \sprintf('https://app.test/auth-log/confirm/%s/%s?expires=%d', $action, $token, $expires ?? time() + 3600);
+        $expires ??= time() + 3600;
+        $url = \sprintf('https://app.test/auth-log/confirm/%s/%s?expires=%d', $action, $token, $expires);
 
-        return Request::create($uriSigner->sign($url), $method);
+        return Request::create($uriSigner->sign($url, $expires), $method);
     }
 
     private function twigExpecting(string $template, string $outcome): Environment
