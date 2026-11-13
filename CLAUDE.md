@@ -63,7 +63,7 @@ src/
 GitHub Actions teste 3 combinaisons :
 - PHP 8.2 + Symfony 6.4
 - PHP 8.2 + Symfony 7.4
-- PHP 8.4 + Symfony 8.0
+- PHP 8.4 + Symfony 8.1
 
 ## Conventions
 
