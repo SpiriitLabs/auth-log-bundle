@@ -52,6 +52,6 @@ final readonly class ConfirmationUrlGenerator
             UrlGeneratorInterface::ABSOLUTE_URL,
         );
 
-        return $this->uriSigner->sign($url);
+        return $this->uriSigner->sign($url, $expiresAt);
     }
 }
